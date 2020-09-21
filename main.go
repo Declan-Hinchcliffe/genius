@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -67,6 +68,10 @@ type Hit struct {
 	} `json:"result"`
 }
 
+type Lyrics struct {
+	Lyrics string `json:"lyrics"`
+}
+
 func main() {
 	var svar string
 	flag.StringVar(&svar, "search", "", "specify your search term")
@@ -98,42 +103,51 @@ func main() {
 	}
 
 	// unmarshal json into struct
-	var songs data
-	if err := json.Unmarshal(body, &songs); err != nil {
+	var apiSongResponse data
+	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
 		panic(err)
 	}
 
-	// range over the results and insert into new slice
-	var song []string
+	var songList []Song
+	for _, songs := range apiSongResponse.Response.Hits {
+		song := Song{
+			Title:  strings.TrimSpace(songs.Result.Title),
+			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
+		}
 
-	for _, songs := range songs.Response.Hits {
-		song = append(song, songs.Result.FullTitle)
+		songList = append(songList, song)
 	}
-	fmt.Println(song)
+	if songList == nil {
+		log.Fatalln("failed to find any songs")
+	}
 
-	//
-	//splitString := strings.Split(songList[6], "by")
-	//splitSong := strings.TrimSpace(splitString[0])
-	//splitArtist := strings.TrimSpace(splitString[1])
-	//
-	////	get the lyrics for this particular song
-	//req, err = http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", splitArtist, splitSong), strings.NewReader(""))
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//resp, err = http.DefaultClient.Do(req)
-	//if err != nil {
-	//	panic(err)
-	//}
+	artist := songList[1].Artist
+	title := songList[1].Title
 
-	//lyrics, err := ioutil.ReadAll(resp.Body)
-	//if err != nil {
-	//	panic(err)
-	//}
+	fmt.Printf("Artist: %v, Song: %v\n\n", artist, title)
 
-	//var lyric []string
+	//	get the lyrics for this particular song
+	req, err = http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
+	if err != nil {
+		panic(err)
+	}
 
-	// can get all the songs by artist
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var lyrics Lyrics
+
+	if err := json.Unmarshal(body, &lyrics); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(lyrics)
 
 }
