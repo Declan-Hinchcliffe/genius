@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -77,10 +76,47 @@ func main() {
 	flag.StringVar(&svar, "search", "", "specify your search term")
 	flag.Parse()
 
+	svar = "kendrick lamar"
+
+	fmt.Println(svar)
+
+	lyrics, err := getTheLyrics(svar)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(lyrics)
+}
+
+func getTheLyrics(svar string) (*Lyrics, error) {
 	encodedSearch := url.QueryEscape(svar)
 
+	songList, err := getSongs(encodedSearch)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(songList)
+	if songList == nil {
+		return nil, err
+	}
+
+	artist := songList[1].Artist
+	title := songList[1].Title
+
+	lyrics, err := getLyrics(artist, title)
+	if err != nil {
+		return nil, err
+	}
+
+	return &lyrics, nil
+
+}
+
+func getSongs(search string) ([]Song, error) {
 	// build request to genius api
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", encodedSearch), strings.NewReader(""))
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), strings.NewReader(""))
+	fmt.Println(req.URL)
 	if err != nil {
 		panic(err)
 	}
@@ -117,27 +153,24 @@ func main() {
 
 		songList = append(songList, song)
 	}
-	if songList == nil {
-		log.Fatalln("failed to find any songs")
-	}
 
-	artist := songList[1].Artist
-	title := songList[1].Title
+	return songList, nil
+}
 
+func getLyrics(artist, title string) (Lyrics, error) {
 	fmt.Printf("Artist: %v, Song: %v\n\n", artist, title)
-
 	//	get the lyrics for this particular song
-	req, err = http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
 	if err != nil {
 		panic(err)
 	}
 
-	resp, err = http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -148,6 +181,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(lyrics)
-
+	return lyrics, nil
 }
