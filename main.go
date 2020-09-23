@@ -68,19 +68,13 @@ type Hit struct {
 }
 
 type Lyrics struct {
-	Content []struct {
-		Title  string `json:"title"`
-		Lyrics string `json:"lyrics"`
-		Artist string `json:"artist"`
-	} `json:"content"`
+	Lyrics string `json:"lyrics"`
 }
 
 func main() {
 	var svar string
 	flag.StringVar(&svar, "search", "", "specify your search term")
 	flag.Parse()
-
-	svar = "drake"
 
 	lyrics, err := getTheLyrics(svar)
 	if err != nil {
@@ -161,7 +155,6 @@ func getLyrics(artist, title string) (*Lyrics, error) {
 	fmt.Printf("Artist: %v, Song: %v\n\n", artist, title)
 	//	get the lyrics for this particular song
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
-	fmt.Println(req.URL)
 	if err != nil {
 		return nil, err
 	}
