@@ -68,7 +68,11 @@ type Hit struct {
 }
 
 type Lyrics struct {
-	Lyrics string `json:"lyrics"`
+	Content []struct {
+		Title  string `json:"title"`
+		Lyrics string `json:"lyrics"`
+		Artist string `json:"artist"`
+	} `json:"content"`
 }
 
 func main() {
@@ -76,9 +80,7 @@ func main() {
 	flag.StringVar(&svar, "search", "", "specify your search term")
 	flag.Parse()
 
-	svar = "kendrick lamar"
-
-	fmt.Println(svar)
+	svar = "drake"
 
 	lyrics, err := getTheLyrics(svar)
 	if err != nil {
@@ -93,30 +95,28 @@ func getTheLyrics(svar string) (*Lyrics, error) {
 
 	songList, err := getSongs(encodedSearch)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	fmt.Println(songList)
 	if songList == nil {
 		return nil, err
 	}
 
-	artist := songList[1].Artist
-	title := songList[1].Title
+	artist := songList[0].Artist
+	title := songList[0].Title
 
 	lyrics, err := getLyrics(artist, title)
 	if err != nil {
 		return nil, err
 	}
 
-	return &lyrics, nil
+	return lyrics, nil
 
 }
 
 func getSongs(search string) ([]Song, error) {
 	// build request to genius api
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), strings.NewReader(""))
-	fmt.Println(req.URL)
 	if err != nil {
 		panic(err)
 	}
@@ -157,29 +157,30 @@ func getSongs(search string) ([]Song, error) {
 	return songList, nil
 }
 
-func getLyrics(artist, title string) (Lyrics, error) {
+func getLyrics(artist, title string) (*Lyrics, error) {
 	fmt.Printf("Artist: %v, Song: %v\n\n", artist, title)
 	//	get the lyrics for this particular song
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
+	fmt.Println(req.URL)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var lyrics Lyrics
 
 	if err := json.Unmarshal(body, &lyrics); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return lyrics, nil
+	return &lyrics, nil
 }
