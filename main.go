@@ -82,6 +82,20 @@ func main() {
 	}
 
 	fmt.Println(lyrics)
+
+	wordMap, err := searchWords(*lyrics)
+	if err != nil {
+		panic(err)
+	}
+
+	keys := make([]string, 0, len(wordMap))
+	for k := range wordMap {
+		keys = append(keys, k)
+	}
+
+	fmt.Println(wordMap)
+
+	fmt.Printf("%v: %v,\n%v: %v,\n %v: %v\n", keys[0], wordMap[keys[0]], keys[1], wordMap[keys[1]], keys[2], wordMap[keys[2]])
 }
 
 func getTheLyrics(svar string) (*Lyrics, error) {
@@ -176,4 +190,32 @@ func getLyrics(artist, title string) (*Lyrics, error) {
 	}
 
 	return &lyrics, nil
+}
+
+func searchWords(lyrics Lyrics) (map[string]int, error) {
+	var fuckCount int
+	var shitCount int
+	var bitchCount int
+
+	words := strings.Fields(lyrics.Lyrics)
+
+	for _, word := range words {
+		switch {
+		case strings.Contains(strings.ToLower(word), "fuck"):
+			fuckCount++
+		case strings.Contains(strings.ToLower(word), "shit"):
+			shitCount++
+		case strings.Contains(strings.ToLower(word), "bitch"):
+			bitchCount++
+		}
+	}
+
+	wordMap := make(map[string]int)
+
+	wordMap["fuckCount"] = fuckCount
+	wordMap["shitCount"] = shitCount
+	wordMap["bitch"] = bitchCount
+
+	return wordMap, nil
+
 }
