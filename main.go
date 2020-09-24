@@ -121,18 +121,12 @@ func main() {
 	flag.StringVar(&wordFlag, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	// insert this into the api.genius.com/artists/:id/songs api
-	// this will return all songs by an artist
-
-	artistFlag = `drake`
 	songs, err := getSongsByArtist(artistFlag)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(songs)
-
-	lyrics, err := getTheLyrics(searchFlag)
+	lyrics, err := getLyrics(songs)
 	if err != nil {
 		panic(err)
 	}
@@ -232,12 +226,12 @@ func songsByArtist(id int) ([]Song, error) {
 		return nil, err
 	}
 
-	songs, err := getSongs(apiSongResponse)
+	songList, err := getSongs(apiSongResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return songs, nil
+	return songList, nil
 }
 
 func getSongs(apiResponse allSongs) ([]Song, error) {
@@ -256,34 +250,34 @@ func getSongs(apiResponse allSongs) ([]Song, error) {
 	return songList, nil
 }
 
-// getTheLyrics will call to the genius api to get the songs and then call
-// to the lyrics api to get the lyrics
-func getTheLyrics(svar string) ([]Lyrics, error) {
-	encodedSearch := url.QueryEscape(svar)
-
-	songList, err := searchSongs(encodedSearch)
-	if err != nil {
-		return nil, err
-	}
-
-	if songList == nil {
-		return nil, err
-	}
-
-	var allLyrics []Lyrics
-	for _, song := range songList {
-		fmt.Printf("title: %v\nartist: %v\n", song.Title, song.Artist)
-		lyrics, err := getLyrics(song.Artist, song.Title)
-		if err != nil {
-			return nil, err
-		}
-
-		allLyrics = append(allLyrics, *lyrics)
-	}
-
-	return allLyrics, nil
-
-}
+//getTheLyrics will call to the genius api to get the songs and then call
+//to the lyrics api to get the lyrics
+//func getTheLyrics(svar string) ([]Lyrics, error) {
+//	encodedSearch := url.QueryEscape(svar)
+//
+//	songList, err := searchSongs(encodedSearch)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	if songList == nil {
+//		return nil, err
+//	}
+//
+//	var allLyrics []Lyrics
+//	for _, song := range songList {
+//		fmt.Printf("title: %v\nartist: %v\n", song.Title, song.Artist)
+//		lyrics, err := getLyrics(song.Artist, song.Title)
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		allLyrics = append(allLyrics, *lyrics)
+//	}
+//
+//	return allLyrics, nil
+//
+//}
 
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
@@ -332,41 +326,46 @@ func searchSongs(search string) ([]Song, error) {
 }
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular song
-func getLyrics(artist, title string) (*Lyrics, error) {
-	fmt.Printf("Artist: %v, Song: %v\n\n", artist, title)
-
-	//	build request to lyrics api
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
-	if err != nil {
-		return nil, err
-	}
-
-	// make request
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// read body of the response
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// unmarshall json into lyrics struct
+func getLyrics(songList []Song) ([]Lyrics, error) {
+	var allLyrics []Lyrics
 	var lyrics Lyrics
-	if err := json.Unmarshal(body, &lyrics); err != nil {
-		return nil, err
+	for _, song := range songList[0:5] {
+		fmt.Printf("Artist: %v, Song: %v\n\n", song.Artist, song.Title)
+
+		//	build request to lyrics api
+		req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
+		if err != nil {
+			return nil, err
+		}
+
+		// make request
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		// read body of the response
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// unmarshall json into lyrics struct
+		if err := json.Unmarshal(body, &lyrics); err != nil {
+			return nil, err
+		}
+
+		allLyrics = append(allLyrics, lyrics)
 	}
 
-	return &lyrics, nil
+	return allLyrics, nil
 }
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
 func findWords(allLyrics []Lyrics, wvar string) (map[string]int, error) {
 	wordFlags := strings.Fields(wvar)
-	fmt.Println(wordFlags)
+	fmt.Println("wordflags:", wordFlags)
 
 	var lyricCount int
 	var fuckCount int
