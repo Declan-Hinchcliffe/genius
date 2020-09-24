@@ -70,18 +70,20 @@ type Lyrics struct {
 }
 
 func main() {
-	var svar string
-	flag.StringVar(&svar, "search", "", "specify your search term")
+	var searchFlag string
+	var wordFlag string
+	flag.StringVar(&searchFlag, "search", "", "specify your search term")
+	flag.StringVar(&wordFlag, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	lyrics, err := getTheLyrics(svar)
+	lyrics, err := getTheLyrics(searchFlag)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(lyrics)
 
-	wordMap, err := findWords(lyrics)
+	wordMap, err := findWords(lyrics, wordFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -208,7 +210,10 @@ func getLyrics(artist, title string) (*Lyrics, error) {
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func findWords(allLyrics []Lyrics) (map[string]int, error) {
+func findWords(allLyrics []Lyrics, wvar string) (map[string]int, error) {
+	wordFlags := strings.Fields(wvar)
+	fmt.Println(wordFlags)
+
 	var lyricCount int
 	var fuckCount int
 	var shitCount int
@@ -242,12 +247,12 @@ func findWords(allLyrics []Lyrics) (map[string]int, error) {
 
 	fmt.Printf("total words counted: %v\n", lyricCount)
 
-	wordMap := make(map[string]int)
-
-	wordMap["fuckCount"] = fuckCount
-	wordMap["shitCount"] = shitCount
-	wordMap["bitchCount"] = bitchCount
-	wordMap["pussyCount"] = pussyCount
+	wordMap := map[string]int{
+		"fuckCount":  fuckCount,
+		"shitCount":  shitCount,
+		"bitchCount": bitchCount,
+		"pussy":      pussyCount,
+	}
 
 	return wordMap, nil
 
