@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 )
 
@@ -80,19 +81,23 @@ func main() {
 
 	fmt.Println(lyrics)
 
-	//wordMap, err := findWords(lyrics)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//// we range over the map to get the keys and store them in a slice
-	//keys := make([]string, 0, len(wordMap))
-	//for k := range wordMap {
-	//	keys = append(keys, k)
-	//}
-	//
-	//sort.Strings(keys)
-	//fmt.Printf("%v: %v,\n%v: %v,\n %v: %v\n", keys[0], wordMap[keys[0]], keys[1], wordMap[keys[1]], keys[2], wordMap[keys[2]])
+	wordMap, err := findWords(lyrics)
+	if err != nil {
+		panic(err)
+	}
+
+	// we range over the map to get the keys and store them in a slice
+	keys := make([]string, 0, len(wordMap))
+	for k := range wordMap {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	fmt.Printf("%v:%v,\n%v:%v,\n%v:%v,\n%v:%v\n",
+		keys[0], wordMap[keys[0]],
+		keys[1], wordMap[keys[1]],
+		keys[2], wordMap[keys[2]],
+		keys[3], wordMap[keys[3]])
 }
 
 // getTheLyrics will call to the genius api to get the songs and then call
@@ -119,8 +124,6 @@ func getTheLyrics(svar string) ([]Lyrics, error) {
 
 		allLyrics = append(allLyrics, *lyrics)
 	}
-
-	fmt.Println(allLyrics)
 
 	return allLyrics, nil
 
@@ -205,27 +208,46 @@ func getLyrics(artist, title string) (*Lyrics, error) {
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func findWords(lyrics Lyrics) (map[string]int, error) {
+func findWords(allLyrics []Lyrics) (map[string]int, error) {
+	var lyricCount int
 	var fuckCount int
 	var shitCount int
 	var bitchCount int
+	var pussyCount int
 
-	for _, word := range strings.Fields(lyrics.Lyrics) {
-		switch {
-		case strings.Contains(strings.ToLower(word), "fuck"):
-			fuckCount++
-		case strings.Contains(strings.ToLower(word), "shit"):
-			shitCount++
-		case strings.Contains(strings.ToLower(word), "bitch"):
-			bitchCount++
+	for _, lyrics := range allLyrics {
+		for _, word := range strings.Fields(lyrics.Lyrics) {
+			lyricCount++
+			switch {
+			case
+				strings.Contains(strings.ToLower(word), "fuck"),
+				strings.Contains(strings.ToLower(word), "f-ck"),
+				strings.Contains(strings.ToLower(word), "f*ck"):
+				fuckCount++
+			case strings.Contains(strings.ToLower(word), "shit"):
+				shitCount++
+			case
+				strings.Contains(strings.ToLower(word), "bitch"),
+				strings.Contains(strings.ToLower(word), "b*tch"),
+				strings.Contains(strings.ToLower(word), "b-tch"):
+				bitchCount++
+			case
+				strings.Contains(strings.ToLower(word), "pussy"),
+				strings.Contains(strings.ToLower(word), "p*ssy"),
+				strings.Contains(strings.ToLower(word), "p-ssy"):
+				pussyCount++
+			}
 		}
 	}
+
+	fmt.Printf("total words counted: %v\n", lyricCount)
 
 	wordMap := make(map[string]int)
 
 	wordMap["fuckCount"] = fuckCount
 	wordMap["shitCount"] = shitCount
-	wordMap["bitch"] = bitchCount
+	wordMap["bitchCount"] = bitchCount
+	wordMap["pussyCount"] = pussyCount
 
 	return wordMap, nil
 
