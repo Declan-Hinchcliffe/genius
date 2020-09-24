@@ -153,7 +153,7 @@ func getAllLyricsByArtist(artistFlag string) ([]Lyrics, error) {
 
 	lyrics, err := getLyrics(songs)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return lyrics, nil
