@@ -121,12 +121,12 @@ func main() {
 	flag.StringVar(&wordFlag, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	songs, err := getSongsByArtist(artistFlag)
+	lyrics, err := getLyricsBySearch(searchFlag)
 	if err != nil {
 		panic(err)
 	}
 
-	lyrics, err := getLyrics(songs)
+	lyrics, err = getAllLyricsByArtist(artistFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -138,22 +138,12 @@ func main() {
 		panic(err)
 	}
 
-	// we range over the map to get the keys and store them in a slice
-	keys := make([]string, 0, len(wordMap))
-	for k := range wordMap {
-		keys = append(keys, k)
-	}
+	displayWordCount(wordMap)
 
-	sort.Strings(keys)
-	fmt.Printf("%v:%v,\n%v:%v,\n%v:%v,\n%v:%v\n",
-		keys[0], wordMap[keys[0]],
-		keys[1], wordMap[keys[1]],
-		keys[2], wordMap[keys[2]],
-		keys[3], wordMap[keys[3]])
 }
 
 // allSongsByArtist will return all the songs by a given artist
-func getSongsByArtist(artistFlag string) ([]Song, error) {
+func getAllLyricsByArtist(artistFlag string) ([]Lyrics, error) {
 	id, err := getArtistID(artistFlag)
 	if err != nil {
 		return nil, err
@@ -161,7 +151,12 @@ func getSongsByArtist(artistFlag string) ([]Song, error) {
 
 	songs, err := songsByArtist(*id)
 
-	return songs, nil
+	lyrics, err := getLyrics(songs)
+	if err != nil {
+		panic(err)
+	}
+
+	return lyrics, nil
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
@@ -252,32 +247,26 @@ func getSongs(apiResponse allSongs) ([]Song, error) {
 
 //getTheLyrics will call to the genius api to get the songs and then call
 //to the lyrics api to get the lyrics
-//func getTheLyrics(svar string) ([]Lyrics, error) {
-//	encodedSearch := url.QueryEscape(svar)
-//
-//	songList, err := searchSongs(encodedSearch)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if songList == nil {
-//		return nil, err
-//	}
-//
-//	var allLyrics []Lyrics
-//	for _, song := range songList {
-//		fmt.Printf("title: %v\nartist: %v\n", song.Title, song.Artist)
-//		lyrics, err := getLyrics(song.Artist, song.Title)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		allLyrics = append(allLyrics, *lyrics)
-//	}
-//
-//	return allLyrics, nil
-//
-//}
+func getLyricsBySearch(svar string) ([]Lyrics, error) {
+	encodedSearch := url.QueryEscape(svar)
+
+	songList, err := searchSongs(encodedSearch)
+	if err != nil {
+		return nil, err
+	}
+
+	if songList == nil {
+		return nil, err
+	}
+
+	allLyrics, err := getLyrics(songList)
+	if err != nil {
+		return nil, err
+	}
+
+	return allLyrics, nil
+
+}
 
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
@@ -408,5 +397,20 @@ func findWords(allLyrics []Lyrics, wvar string) (map[string]int, error) {
 	}
 
 	return wordMap, nil
+}
+
+func displayWordCount(wordMap map[string]int) {
+	// we range over the map to get the keys and store them in a slice
+	keys := make([]string, 0, len(wordMap))
+	for k := range wordMap {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	fmt.Printf("%v:%v,\n%v:%v,\n%v:%v,\n%v:%v\n",
+		keys[0], wordMap[keys[0]],
+		keys[1], wordMap[keys[1]],
+		keys[2], wordMap[keys[2]],
+		keys[3], wordMap[keys[3]])
 
 }
