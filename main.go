@@ -7,14 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 )
 
-// want to call to the genius api and get information about artists
-// make it so you can search for an artist or song
-// can get the lyrics for a song
-// can get all the songs by artist
-
+// Song represents a song returned from the API
 type Song struct {
 	Title  string
 	Artist string
@@ -23,11 +20,11 @@ type Song struct {
 // need to define our song struct
 type data struct {
 	Response struct {
-		Hits []Hit
+		Hits []hit
 	} `json:"response"`
 }
 
-type Hit struct {
+type hit struct {
 	Highlights []interface{} `json:"highlights"`
 	Index      string        `json:"index"`
 	Type       string        `json:"type"`
@@ -67,6 +64,7 @@ type Hit struct {
 	} `json:"result"`
 }
 
+// Lyrics represents the lyrics returned from the lyric api
 type Lyrics struct {
 	Lyrics string `json:"lyrics"`
 }
@@ -83,21 +81,23 @@ func main() {
 
 	fmt.Println(lyrics)
 
-	wordMap, err := searchWords(*lyrics)
+	wordMap, err := findWords(*lyrics)
 	if err != nil {
 		panic(err)
 	}
 
+	// we range over the map to get the keys and store them in a slice
 	keys := make([]string, 0, len(wordMap))
 	for k := range wordMap {
 		keys = append(keys, k)
 	}
 
-	fmt.Println(wordMap)
-
+	sort.Strings(keys)
 	fmt.Printf("%v: %v,\n%v: %v,\n %v: %v\n", keys[0], wordMap[keys[0]], keys[1], wordMap[keys[1]], keys[2], wordMap[keys[2]])
 }
 
+// getTheLyrics will call to the genius api to get the songs and then call
+// to the lyrics api to get the lyrics
 func getTheLyrics(svar string) (*Lyrics, error) {
 	encodedSearch := url.QueryEscape(svar)
 
@@ -122,6 +122,8 @@ func getTheLyrics(svar string) (*Lyrics, error) {
 
 }
 
+// getSongs will call to the genius api and return a list of songs matching
+// a particular search
 func getSongs(search string) ([]Song, error) {
 	// build request to genius api
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), strings.NewReader(""))
@@ -130,7 +132,6 @@ func getSongs(search string) ([]Song, error) {
 	}
 
 	token := "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
-
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "Application/json")
 
@@ -146,12 +147,14 @@ func getSongs(search string) ([]Song, error) {
 		panic(err)
 	}
 
-	// unmarshal json into struct
+	// unmarshal json into song response struct
 	var apiSongResponse data
 	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
 		panic(err)
 	}
 
+	// define our song list variable and range over the songs and add the
+	// song name and artist to the song struct
 	var songList []Song
 	for _, songs := range apiSongResponse.Response.Hits {
 		song := Song{
@@ -165,26 +168,30 @@ func getSongs(search string) ([]Song, error) {
 	return songList, nil
 }
 
+// getLyrics will call to the lyrics api and return the lyrics for a particular song
 func getLyrics(artist, title string) (*Lyrics, error) {
 	fmt.Printf("Artist: %v, Song: %v\n\n", artist, title)
-	//	get the lyrics for this particular song
+
+	//	build request to lyrics api
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", artist, title), strings.NewReader(""))
 	if err != nil {
 		return nil, err
 	}
 
+	// make request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// read body of the response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
+	// unmarshall json into lyrics struct
 	var lyrics Lyrics
-
 	if err := json.Unmarshal(body, &lyrics); err != nil {
 		return nil, err
 	}
@@ -192,14 +199,14 @@ func getLyrics(artist, title string) (*Lyrics, error) {
 	return &lyrics, nil
 }
 
-func searchWords(lyrics Lyrics) (map[string]int, error) {
+// findWords will search through the lyrics and count the number of matches
+// for particular words
+func findWords(lyrics Lyrics) (map[string]int, error) {
 	var fuckCount int
 	var shitCount int
 	var bitchCount int
 
-	words := strings.Fields(lyrics.Lyrics)
-
-	for _, word := range words {
+	for _, word := range strings.Fields(lyrics.Lyrics) {
 		switch {
 		case strings.Contains(strings.ToLower(word), "fuck"):
 			fuckCount++
