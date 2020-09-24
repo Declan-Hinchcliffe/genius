@@ -71,10 +71,17 @@ type Lyrics struct {
 
 func main() {
 	var searchFlag string
+	var artistFlag string
 	var wordFlag string
 	flag.StringVar(&searchFlag, "search", "", "specify your search term")
+	flag.StringVar(&artistFlag, "artist", "", "specify your search term")
 	flag.StringVar(&wordFlag, "word", "", "specify the words you want to look for")
 	flag.Parse()
+
+	// to search for all songs by artist need to first search by name
+	// pluck out the arist id from the json response (under primary artist)
+	// insert this into the api.genius.com/artists/:id/songs api
+	// this will return all songs by an artist
 
 	lyrics, err := getTheLyrics(searchFlag)
 	if err != nil {
@@ -107,7 +114,7 @@ func main() {
 func getTheLyrics(svar string) ([]Lyrics, error) {
 	encodedSearch := url.QueryEscape(svar)
 
-	songList, err := getSongs(encodedSearch)
+	songList, err := searchSongs(encodedSearch)
 	if err != nil {
 		return nil, err
 	}
@@ -131,9 +138,9 @@ func getTheLyrics(svar string) ([]Lyrics, error) {
 
 }
 
-// getSongs will call to the genius api and return a list of songs matching
+// searchSongs will call to the genius api and return a list of songs matching
 // a particular search
-func getSongs(search string) ([]Song, error) {
+func searchSongs(search string) ([]Song, error) {
 	// build request to genius api
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), strings.NewReader(""))
 	if err != nil {
