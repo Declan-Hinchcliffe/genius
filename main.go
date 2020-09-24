@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"sort"
 	"strings"
 )
 
@@ -81,24 +80,24 @@ func main() {
 
 	fmt.Println(lyrics)
 
-	wordMap, err := findWords(*lyrics)
-	if err != nil {
-		panic(err)
-	}
-
-	// we range over the map to get the keys and store them in a slice
-	keys := make([]string, 0, len(wordMap))
-	for k := range wordMap {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-	fmt.Printf("%v: %v,\n%v: %v,\n %v: %v\n", keys[0], wordMap[keys[0]], keys[1], wordMap[keys[1]], keys[2], wordMap[keys[2]])
+	//wordMap, err := findWords(lyrics)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//// we range over the map to get the keys and store them in a slice
+	//keys := make([]string, 0, len(wordMap))
+	//for k := range wordMap {
+	//	keys = append(keys, k)
+	//}
+	//
+	//sort.Strings(keys)
+	//fmt.Printf("%v: %v,\n%v: %v,\n %v: %v\n", keys[0], wordMap[keys[0]], keys[1], wordMap[keys[1]], keys[2], wordMap[keys[2]])
 }
 
 // getTheLyrics will call to the genius api to get the songs and then call
 // to the lyrics api to get the lyrics
-func getTheLyrics(svar string) (*Lyrics, error) {
+func getTheLyrics(svar string) ([]Lyrics, error) {
 	encodedSearch := url.QueryEscape(svar)
 
 	songList, err := getSongs(encodedSearch)
@@ -110,15 +109,20 @@ func getTheLyrics(svar string) (*Lyrics, error) {
 		return nil, err
 	}
 
-	artist := songList[0].Artist
-	title := songList[0].Title
+	var allLyrics []Lyrics
+	for _, song := range songList {
+		fmt.Printf("title: %v\nartist: %v\n", song.Title, song.Artist)
+		lyrics, err := getLyrics(song.Artist, song.Title)
+		if err != nil {
+			return nil, err
+		}
 
-	lyrics, err := getLyrics(artist, title)
-	if err != nil {
-		return nil, err
+		allLyrics = append(allLyrics, *lyrics)
 	}
 
-	return lyrics, nil
+	fmt.Println(allLyrics)
+
+	return allLyrics, nil
 
 }
 
