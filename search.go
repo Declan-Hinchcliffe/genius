@@ -10,7 +10,7 @@ import (
 )
 
 //need to define our song struct
-type data struct {
+type apiSearchResponse struct {
 	Response struct {
 		Hits []hit
 	} `json:"response"`
@@ -105,15 +105,15 @@ func searchSongs(search string) ([]song, error) {
 	}
 
 	// unmarshal json into song response struct
-	var apiSongResponse data
-	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
+	var apiSearchRepsonse apiSearchResponse
+	if err := json.Unmarshal(body, &apiSearchRepsonse); err != nil {
 		return nil, err
 	}
 
 	// define our song list variable and range over the songs and add the
 	// song name and artist to the song struct
 	var songList []song
-	for _, songs := range apiSongResponse.Response.Hits {
+	for _, songs := range apiSearchRepsonse.Response.Hits {
 		song := song{
 			Title:  strings.TrimSpace(songs.Result.Title),
 			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),

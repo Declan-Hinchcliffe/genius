@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-type allSongs struct {
+// allSongs represents the data structure of the response from the genius api
+type allSongsResponse struct {
 	Meta struct {
 		Status int `json:"status"`
 	} `json:"meta"`
@@ -52,7 +53,7 @@ type allSongs struct {
 	} `json:"response"`
 }
 
-// allSongsByArtist will return all the songs by a given artist
+// getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
 func getAllLyricsByArtist(flag *string) ([]lyrics, error) {
 	id, err := getArtistID(*flag)
 	if err != nil {
@@ -71,8 +72,9 @@ func getAllLyricsByArtist(flag *string) ([]lyrics, error) {
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
 func getArtistID(artistFlag string) (*int, error) {
+	// url encoded flag to use in request
 	encodedSearch := url.QueryEscape(artistFlag)
-	// build request to genius api
+
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", encodedSearch), strings.NewReader(""))
 	if err != nil {
 		return nil, err
@@ -82,31 +84,28 @@ func getArtistID(artistFlag string) (*int, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "Application/json")
 
-	// make request to genius api
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// read the body of the request
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	// unmarshal json into song response struct
-	var apiSongResponse data
-	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
+	var songResponse apiSearchResponse
+	if err := json.Unmarshal(body, &songResponse); err != nil {
 		return nil, err
 	}
 
-	id := apiSongResponse.Response.Hits[0].Result.PrimaryArtist.ID
+	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
 
 	return &id, nil
 }
 
+// songsByArtist will retrieve all the songs by an artist using the artist id
 func songsByArtist(id int) ([]song, error) {
-	// build request using the id obtained earlier
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/artists/%v/songs?sort=popularity", id), strings.NewReader(""))
 	if err != nil {
 		return nil, err
@@ -126,12 +125,12 @@ func songsByArtist(id int) ([]song, error) {
 		return nil, err
 	}
 
-	var apiSongResponse allSongs
-	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
+	var apiSongs allSongsResponse
+	if err := json.Unmarshal(body, &apiSongs); err != nil {
 		return nil, err
 	}
 
-	songList, err := getSongs(apiSongResponse)
+	songList, err := getSongs(apiSongs)
 	if err != nil {
 		return nil, err
 	}
@@ -139,11 +138,10 @@ func songsByArtist(id int) ([]song, error) {
 	return songList, nil
 }
 
-func getSongs(apiResponse allSongs) ([]song, error) {
-	// define our song list variable and range over the songs and add the
-	// song name and artist to the song struct
+// getSongs will loop over a slice of song data and retrieve the artist and title for each song
+func getSongs(apiSongs allSongsResponse) ([]song, error) {
 	var songList []song
-	for _, songs := range apiResponse.Response.Songs {
+	for _, songs := range apiSongs.Response.Songs {
 		song := song{
 			Title:  strings.TrimSpace(songs.Title),
 			Artist: strings.TrimSpace(songs.PrimaryArtist.Name),
