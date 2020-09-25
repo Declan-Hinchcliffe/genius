@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type AllSongs struct {
+type allSongs struct {
 	Meta struct {
 		Status int `json:"status"`
 	} `json:"meta"`
@@ -126,7 +126,7 @@ func songsByArtist(id int) ([]song, error) {
 		return nil, err
 	}
 
-	var apiSongResponse AllSongs
+	var apiSongResponse allSongs
 	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func songsByArtist(id int) ([]song, error) {
 	return songList, nil
 }
 
-func getSongs(apiResponse AllSongs) ([]song, error) {
+func getSongs(apiResponse allSongs) ([]song, error) {
 	// define our song list variable and range over the songs and add the
 	// song name and artist to the song struct
 	var songList []song
