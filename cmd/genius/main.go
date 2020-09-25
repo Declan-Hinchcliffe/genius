@@ -18,7 +18,7 @@ type Song struct {
 }
 
 //need to define our song struct
-type data struct {
+type Data struct {
 	Response struct {
 		Hits []hit
 	} `json:"response"`
@@ -64,7 +64,7 @@ type hit struct {
 	} `json:"result"`
 }
 
-type allSongs struct {
+type AllSongs struct {
 	Meta struct {
 		Status int `json:"status"`
 	} `json:"meta"`
@@ -121,7 +121,7 @@ func main() {
 	flag.StringVar(&wordFlag, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	lyrics, err := getLyricsBySearch(searchFlag)
+	lyrics, err := GetLyricsBySearch(searchFlag)
 	if err != nil {
 		panic(err)
 	}
@@ -216,7 +216,7 @@ func songsByArtist(id int) ([]Song, error) {
 		return nil, err
 	}
 
-	var apiSongResponse allSongs
+	var apiSongResponse AllSongs
 	if err := json.Unmarshal(body, &apiSongResponse); err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func songsByArtist(id int) ([]Song, error) {
 	return songList, nil
 }
 
-func getSongs(apiResponse allSongs) ([]Song, error) {
+func getSongs(apiResponse AllSongs) ([]Song, error) {
 	// define our song list variable and range over the songs and add the
 	// song name and artist to the song struct
 	var songList []Song
@@ -243,29 +243,6 @@ func getSongs(apiResponse allSongs) ([]Song, error) {
 	}
 
 	return songList, nil
-}
-
-//getTheLyrics will call to the genius api to get the songs and then call
-//to the lyrics api to get the lyrics
-func getLyricsBySearch(svar string) ([]Lyrics, error) {
-	encodedSearch := url.QueryEscape(svar)
-
-	songList, err := searchSongs(encodedSearch)
-	if err != nil {
-		return nil, err
-	}
-
-	if songList == nil {
-		return nil, err
-	}
-
-	allLyrics, err := getLyrics(songList)
-	if err != nil {
-		return nil, err
-	}
-
-	return allLyrics, nil
-
 }
 
 // searchSongs will call to the genius api and return a list of songs matching
