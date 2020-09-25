@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+
+	"github.com/joe-bricknell/genius"
 )
 
 // Song represents a song returned from the API
@@ -121,7 +123,7 @@ func main() {
 	flag.StringVar(&wordFlag, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	lyrics, err := GetLyricsBySearch(searchFlag)
+	lyrics, err := genius.GetLyricsBySearch(searchFlag)
 	if err != nil {
 		panic(err)
 	}

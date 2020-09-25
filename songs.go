@@ -1,5 +1,1 @@
 package genius
-
-func main() {
-
-}
