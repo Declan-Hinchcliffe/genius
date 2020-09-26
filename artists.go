@@ -89,6 +89,8 @@ func getArtistID(artistFlag string) (*int, error) {
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -119,6 +121,8 @@ func songsByArtist(id int) ([]song, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

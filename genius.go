@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+type ClientGenius struct {
+	client      *http.Client
+	baseURL     string
+	secretToken string
+}
+
 // Song represents a song returned from the API
 type song struct {
 	Title  string `json:"title"`
@@ -66,13 +72,15 @@ func getLyrics(songList []song) ([]lyrics, error) {
 			return nil, err
 		}
 
+		defer resp.Body.Close()
+
 		// read body of the response
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		// unmarshall json into lyrics struct
+		// unmarshal json into lyrics struct
 		if err := json.Unmarshal(body, &lyrics); err != nil {
 			return nil, err
 		}

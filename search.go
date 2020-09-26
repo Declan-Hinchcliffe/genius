@@ -98,6 +98,8 @@ func searchSongs(search string) ([]song, error) {
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	// read the body of the request
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
