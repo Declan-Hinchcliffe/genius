@@ -37,8 +37,7 @@ func Genius() {
 	flag.StringVar(&word, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	search = `Kendrick Lamar`
-	artist = `Kendrick Lamar`
+	artist = "megan thee stallion"
 
 	lyrics, err := getLyricsBySearch(search)
 	if err != nil {
@@ -52,11 +51,7 @@ func Genius() {
 
 	fmt.Println(lyrics)
 
-	wordMap, err := findWords(lyrics, word)
-	if err != nil {
-		panic(err)
-	}
-
+	wordMap := findWords(lyrics, word)
 	displayWordCount(wordMap)
 }
 
@@ -100,7 +95,7 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func findWords(allLyrics []Lyrics, flag string) (map[string]int, error) {
+func findWords(allLyrics []Lyrics, flag string) map[string]int {
 	wordFlags := strings.Fields(flag)
 	fmt.Println("wordflags:", wordFlags)
 
@@ -132,6 +127,7 @@ func findWords(allLyrics []Lyrics, flag string) (map[string]int, error) {
 				strings.Contains(strings.ToLower(word), "p-ssy"):
 				pussyCount++
 			}
+
 		}
 	}
 
@@ -141,10 +137,10 @@ func findWords(allLyrics []Lyrics, flag string) (map[string]int, error) {
 		"fuckCount":  fuckCount,
 		"shitCount":  shitCount,
 		"bitchCount": bitchCount,
-		"pussy":      pussyCount,
+		"pussyCount": pussyCount,
 	}
 
-	return wordMap, nil
+	return wordMap
 }
 
 func displayWordCount(wordMap map[string]int) {
