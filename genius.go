@@ -37,16 +37,16 @@ func Genius() {
 	flag.StringVar(&word, "word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	artist = "megan thee stallion"
-
 	lyrics, err := getLyricsBySearch(search)
 	if err != nil {
 		panic(err)
 	}
 
-	lyrics, err = getAllLyricsByArtist(artist)
-	if err != nil {
-		panic(err)
+	if artist != "" {
+		lyrics, err = getAllLyricsByArtist(artist)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	fmt.Println(lyrics)
