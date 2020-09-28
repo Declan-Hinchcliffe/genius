@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-//need to define our song struct
+//need to define our Song struct
 type apiSearchResponse struct {
 	Response struct {
 		Hits []hit
@@ -58,8 +58,8 @@ type hit struct {
 
 // GetLyricsBySearch will call to the genius api to get the songs and then call
 // to the lyrics api to get the lyrics
-func getLyricsBySearch(flag *string) ([]lyrics, error) {
-	encodedSearch := url.QueryEscape(*flag)
+func getLyricsBySearch(flag string) ([]Lyrics, error) {
+	encodedSearch := url.QueryEscape(flag)
 
 	songList, err := searchSongs(encodedSearch)
 	if err != nil {
@@ -81,9 +81,9 @@ func getLyricsBySearch(flag *string) ([]lyrics, error) {
 
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
-func searchSongs(search string) ([]song, error) {
+func searchSongs(search string) ([]Song, error) {
 	// build request to genius api
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), strings.NewReader(""))
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -106,17 +106,17 @@ func searchSongs(search string) ([]song, error) {
 		return nil, err
 	}
 
-	// unmarshal json into song response struct
+	// unmarshal json into Song response struct
 	var apiSearchRepsonse apiSearchResponse
 	if err := json.Unmarshal(body, &apiSearchRepsonse); err != nil {
 		return nil, err
 	}
 
-	// define our song list variable and range over the songs and add the
-	// song name and artist to the song struct
-	var songList []song
+	// define our Song list variable and range over the songs and add the
+	// Song name and artist to the Song struct
+	var songList []Song
 	for _, songs := range apiSearchRepsonse.Response.Hits {
-		song := song{
+		song := Song{
 			Title:  strings.TrimSpace(songs.Result.Title),
 			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
 		}

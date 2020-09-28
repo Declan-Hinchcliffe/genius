@@ -54,8 +54,8 @@ type allSongsResponse struct {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func getAllLyricsByArtist(flag *string) ([]lyrics, error) {
-	id, err := getArtistID(*flag)
+func getAllLyricsByArtist(flag string) ([]Lyrics, error) {
+	id, err := getArtistID(flag)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func getArtistID(artistFlag string) (*int, error) {
 	// url encoded flag to use in request
 	encodedSearch := url.QueryEscape(artistFlag)
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", encodedSearch), strings.NewReader(""))
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", encodedSearch), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +107,8 @@ func getArtistID(artistFlag string) (*int, error) {
 }
 
 // songsByArtist will retrieve all the songs by an artist using the artist id
-func songsByArtist(id int) ([]song, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/artists/%v/songs?sort=popularity", id), strings.NewReader(""))
+func songsByArtist(id int) ([]Song, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/artists/%v/songs?sort=popularity", id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -142,11 +142,11 @@ func songsByArtist(id int) ([]song, error) {
 	return songList, nil
 }
 
-// getSongs will loop over a slice of song data and retrieve the artist and title for each song
-func getSongs(apiSongs allSongsResponse) ([]song, error) {
-	var songList []song
+// getSongs will loop over a slice of Song data and retrieve the artist and title for each Song
+func getSongs(apiSongs allSongsResponse) ([]Song, error) {
+	var songList []Song
 	for _, songs := range apiSongs.Response.Songs {
-		song := song{
+		song := Song{
 			Title:  strings.TrimSpace(songs.Title),
 			Artist: strings.TrimSpace(songs.PrimaryArtist.Name),
 		}

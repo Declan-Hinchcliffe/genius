@@ -16,22 +16,29 @@ type ClientGenius struct {
 	secretToken string
 }
 
-// Song represents a song returned from the API
-type song struct {
+// Song represents a Song returned from the API
+type Song struct {
 	Title  string `json:"title"`
 	Artist string `json:"artist"`
 }
 
 // Lyrics represents the lyrics returned from the lyric api
-type lyrics struct {
+type Lyrics struct {
 	Lyrics string `json:"lyrics"`
 }
 
 func Genius() {
-	search := flag.String("search", "", "specify your search term")
-	artist := flag.String("artist", "", "specify your search term")
-	wordFlag := flag.String("word", "", "specify the words you want to look for")
+	var search string
+	var artist string
+	var word string
+
+	flag.StringVar(&search, "search", "", "specify your search term")
+	flag.StringVar(&artist, "artist", "", "specify your artist")
+	flag.StringVar(&word, "word", "", "specify the words you want to look for")
 	flag.Parse()
+
+	search = `Kendrick Lamar`
+	artist = `Kendrick Lamar`
 
 	lyrics, err := getLyricsBySearch(search)
 	if err != nil {
@@ -45,7 +52,7 @@ func Genius() {
 
 	fmt.Println(lyrics)
 
-	wordMap, err := findWords(lyrics, wordFlag)
+	wordMap, err := findWords(lyrics, word)
 	if err != nil {
 		panic(err)
 	}
@@ -53,11 +60,11 @@ func Genius() {
 	displayWordCount(wordMap)
 }
 
-// getLyrics will call to the lyrics api and return the lyrics for a particular song
-func getLyrics(songList []song) ([]lyrics, error) {
-	var allLyrics []lyrics
-	var lyrics lyrics
-	for _, song := range songList[0:5] {
+// getLyrics will call to the lyrics api and return the lyrics for a particular Song
+func getLyrics(songList []Song) ([]Lyrics, error) {
+	var allLyrics []Lyrics
+	var lyrics Lyrics
+	for _, song := range songList {
 		fmt.Printf("Artist: %v, Song: %v\n\n", song.Artist, song.Title)
 
 		//	build request to lyrics api
@@ -93,8 +100,8 @@ func getLyrics(songList []song) ([]lyrics, error) {
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func findWords(allLyrics []lyrics, flag *string) (map[string]int, error) {
-	wordFlags := strings.Fields(*flag)
+func findWords(allLyrics []Lyrics, flag string) (map[string]int, error) {
+	wordFlags := strings.Fields(flag)
 	fmt.Println("wordflags:", wordFlags)
 
 	var lyricCount int
