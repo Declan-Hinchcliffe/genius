@@ -59,10 +59,10 @@ func TestFindWords(t *testing.T) {
 			desc:   "1. returns word map with no error",
 			lyrics: testLyrics,
 			expectedWords: map[string]int{
-				"fuckCount":  4,
-				"shitCount":  3,
-				"bitchCount": 1,
-				"pussyCount": 18,
+				"fuckCount":  12,
+				"shitCount":  6,
+				"bitchCount": 13,
+				"pussyCount": 21,
 			},
 		},
 	}
