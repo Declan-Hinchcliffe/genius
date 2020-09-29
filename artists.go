@@ -2,6 +2,7 @@ package genius
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -61,6 +62,9 @@ func getAllLyricsByArtist(flag string) ([]Lyrics, error) {
 	}
 
 	songs, err := songsByArtist(*id)
+	if err != nil {
+		return nil, err
+	}
 
 	lyrics, err := getLyrics(songs)
 	if err != nil {
@@ -101,6 +105,9 @@ func getArtistID(artistFlag string) (*int, error) {
 		return nil, err
 	}
 
+	if len(songResponse.Response.Hits) == 0 {
+		return nil, errors.New("couldn't find id for given artist")
+	}
 	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
 
 	return &id, nil

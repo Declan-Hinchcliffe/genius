@@ -17,14 +17,14 @@ func TestGetLyricsBySearch(t *testing.T) {
 
 func TestSearchSongs(t *testing.T) {
 	testCases := []struct {
-		desc             string
-		search           string
-		expectedResponse []Song
+		desc          string
+		search        string
+		expectedSongs []Song
 	}{
 		{
 			desc:   "1. successfully returns songs using search term",
 			search: "drake",
-			expectedResponse: []Song{
+			expectedSongs: []Song{
 				{
 					Title:  "God’s Plan",
 					Artist: "Drake",
@@ -40,9 +40,9 @@ func TestSearchSongs(t *testing.T) {
 			},
 		},
 		{
-			desc:             "2. response returns empty songs as api can't find song",
-			search:           "krvbhrbvjhrbvhjrbv",
-			expectedResponse: nil,
+			desc:          "2. response returns empty songs as api can't find song",
+			search:        "krvbhrbvjhrbvhjrbv",
+			expectedSongs: nil,
 		},
 	}
 
@@ -53,9 +53,9 @@ func TestSearchSongs(t *testing.T) {
 		}
 
 		if songs != nil {
-			assert.Equal(t, tc.expectedResponse[0:2], songs[0:2])
+			assert.Equal(t, tc.expectedSongs[0:2], songs[0:2])
 		} else {
-			assert.Equal(t, tc.expectedResponse, songs)
+			assert.Equal(t, tc.expectedSongs, songs)
 		}
 
 	}

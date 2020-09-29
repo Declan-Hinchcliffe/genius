@@ -10,9 +10,9 @@ import (
 
 func TestGetLyrics(t *testing.T) {
 	testCases := []struct {
-		desc             string
-		songs            []Song
-		expectedResponse []Lyrics
+		desc           string
+		songs          []Song
+		expectedLyrics []Lyrics
 	}{
 		{
 			desc: "1. response returns lyrics",
@@ -22,7 +22,7 @@ func TestGetLyrics(t *testing.T) {
 					Artist: "Drake",
 				},
 			},
-			expectedResponse: testLyrics,
+			expectedLyrics: testLyrics,
 		},
 		{
 			desc: "2. response returns empty lyrics as api can't find song",
@@ -32,7 +32,7 @@ func TestGetLyrics(t *testing.T) {
 					Artist: "Kendrick Lamar",
 				},
 			},
-			expectedResponse: []Lyrics{{Lyrics: ""}},
+			expectedLyrics: []Lyrics{{Lyrics: ""}},
 		},
 	}
 
@@ -41,7 +41,7 @@ func TestGetLyrics(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error when calling getLyrics. err: %v", err)
 		}
-		assert.Equal(t, stripNewlineChar(tc.expectedResponse[0].Lyrics), stripNewlineChar(lyrics[0].Lyrics))
+		assert.Equal(t, stripNewlineChar(tc.expectedLyrics[0].Lyrics), stripNewlineChar(lyrics[0].Lyrics))
 	}
 }
 
@@ -51,14 +51,14 @@ func stripNewlineChar(lyrics string) string {
 
 func TestFindWords(t *testing.T) {
 	testCases := []struct {
-		desc             string
-		lyrics           []Lyrics
-		expectedResponse map[string]int
+		desc          string
+		lyrics        []Lyrics
+		expectedWords map[string]int
 	}{
 		{
 			desc:   "1. returns word map with no error",
 			lyrics: testLyrics,
-			expectedResponse: map[string]int{
+			expectedWords: map[string]int{
 				"fuckCount":  4,
 				"shitCount":  3,
 				"bitchCount": 1,
@@ -69,7 +69,7 @@ func TestFindWords(t *testing.T) {
 
 	for _, tc := range testCases {
 		wordMap := findWords(tc.lyrics, "")
-		assert.Equal(t, wordMap, tc.expectedResponse)
+		assert.Equal(t, wordMap, tc.expectedWords)
 
 		fmt.Println(wordMap)
 	}
