@@ -1,7 +1,6 @@
 package genius
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +13,7 @@ func TestGetLyricsBySearch(t *testing.T) {
 		t.Fatalf("error when calling getLyricsBySearch. err: %v", err)
 	}
 
-	fmt.Println(lyrics)
+	assert.Equal(t, LyricsResp[2], lyrics[1])
 }
 
 func TestSearchSongs(t *testing.T) {
