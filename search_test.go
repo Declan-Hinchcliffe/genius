@@ -7,13 +7,12 @@ import (
 )
 
 func TestGetLyricsBySearch(t *testing.T) {
-	flag := "cardi b"
-	lyrics, err := getLyricsBySearch(flag)
+	lyrics, err := getLyricsBySearch("cardi b")
 	if err != nil {
 		t.Fatalf("error when calling getLyricsBySearch. err: %v", err)
 	}
 
-	assert.Equal(t, LyricsResp[2], lyrics[1])
+	assert.Equal(t, testLyrics[2], lyrics[1])
 }
 
 func TestSearchSongs(t *testing.T) {

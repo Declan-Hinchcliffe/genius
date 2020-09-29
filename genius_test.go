@@ -22,7 +22,7 @@ func TestGetLyrics(t *testing.T) {
 					Artist: "Drake",
 				},
 			},
-			expectedResponse: LyricsResp,
+			expectedResponse: testLyrics,
 		},
 		{
 			desc: "2. response returns empty lyrics as api can't find song",
@@ -57,7 +57,7 @@ func TestFindWords(t *testing.T) {
 	}{
 		{
 			desc:   "1. returns word map with no error",
-			lyrics: LyricsResp,
+			lyrics: testLyrics,
 			expectedResponse: map[string]int{
 				"fuckCount":  4,
 				"shitCount":  3,

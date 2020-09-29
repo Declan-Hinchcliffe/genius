@@ -48,7 +48,6 @@ func Genius() {
 			panic(err)
 		}
 	}
-
 	fmt.Println(lyrics)
 
 	wordMap := findWords(lyrics, word)
