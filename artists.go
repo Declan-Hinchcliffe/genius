@@ -55,8 +55,8 @@ type allSongsResponse struct {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func getAllLyricsByArtist(flag string) ([]Lyrics, error) {
-	id, err := getArtistID(flag)
+func getAllLyricsByArtist(flag *string) ([]Lyrics, error) {
+	id, err := getArtistID(*flag)
 	if err != nil {
 		return nil, err
 	}

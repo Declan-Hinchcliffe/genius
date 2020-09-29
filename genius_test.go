@@ -68,7 +68,7 @@ func TestFindWords(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		wordMap := findWords(tc.lyrics, "")
+		wordMap := findWords(tc.lyrics, nil)
 		assert.Equal(t, wordMap, tc.expectedWords)
 
 		fmt.Println(wordMap)

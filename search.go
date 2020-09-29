@@ -58,8 +58,8 @@ type hit struct {
 
 // GetLyricsBySearch will call to the genius api to get the songs and then call
 // to the lyrics api to get the lyrics
-func getLyricsBySearch(flag string) ([]Lyrics, error) {
-	encodedSearch := url.QueryEscape(flag)
+func getLyricsBySearch(flag *string) ([]Lyrics, error) {
+	encodedSearch := url.QueryEscape(*flag)
 
 	songList, err := searchSongs(encodedSearch)
 	if err != nil {

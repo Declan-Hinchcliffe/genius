@@ -8,21 +8,23 @@ import (
 )
 
 func TestGetAllLyricsByArtist(t *testing.T) {
+	validArtist := "Kanye West"
+	invalidArtist := "hewbcjhwbcjhwe"
 	testCases := []struct {
 		desc           string
-		flag           string
+		flag           *string
 		expectedLyrics []Lyrics
 		expectedErr    error
 	}{
 		{
 			desc:           "1. can successfully retrieve all lyrics by given artist",
-			flag:           "Kanye West",
+			flag:           &validArtist,
 			expectedLyrics: []Lyrics{testLyrics[3]},
 			expectedErr:    nil,
 		},
 		{
 			desc:           "2. returns error as can't find artist id for given artist",
-			flag:           "hewbcjhwbcjhwe",
+			flag:           &invalidArtist,
 			expectedLyrics: nil,
 			expectedErr:    errors.New("couldn't find id for given artist"),
 		},

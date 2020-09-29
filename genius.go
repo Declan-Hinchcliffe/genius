@@ -28,13 +28,9 @@ type Lyrics struct {
 }
 
 func Genius() {
-	var search string
-	var artist string
-	var word string
-
-	flag.StringVar(&search, "search", "", "specify your search term")
-	flag.StringVar(&artist, "artist", "", "specify your artist")
-	flag.StringVar(&word, "word", "", "specify the words you want to look for")
+	search := flag.String("search", "", "specify your search term")
+	artist := flag.String("artist", "", "specify your artist")
+	word := flag.String("word", "", "specify the words you want to look for")
 	flag.Parse()
 
 	lyrics, err := getLyricsBySearch(search)
@@ -42,7 +38,7 @@ func Genius() {
 		panic(err)
 	}
 
-	if artist != "" {
+	if artist != nil {
 		lyrics, err = getAllLyricsByArtist(artist)
 		if err != nil {
 			panic(err)
@@ -94,9 +90,9 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func findWords(allLyrics []Lyrics, flag string) map[string]int {
-	wordFlags := strings.Fields(flag)
-	fmt.Println("wordflags:", wordFlags)
+func findWords(allLyrics []Lyrics, flag *string) map[string]int {
+	//wordFlags := strings.Fields(*flag)
+	//fmt.Println("wordflags:", wordFlags)
 
 	var lyricCount int
 	var fuckCount int

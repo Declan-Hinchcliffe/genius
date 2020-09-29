@@ -11,7 +11,6 @@ func main() {
 	genius.Genius()
 }
 
-// todo: need to add unit tests around functions
 // todo: need to add go routines for concurrent requests
 // todo: possibly try and benchmark app to see before and after go routines?
 // todo: need to add flag for search words
