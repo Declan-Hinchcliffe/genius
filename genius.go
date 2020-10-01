@@ -33,13 +33,20 @@ func Genius() {
 	word := flag.String("word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	lyrics, err := getLyricsBySearch(search)
-	if err != nil {
-		panic(err)
+	_ = artist
+	testartist := "drake"
+
+	var lyrics []Lyrics
+	var err error
+	if *search != "" {
+		lyrics, err = getLyricsBySearch(search)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	if artist != nil {
-		lyrics, err = getAllLyricsByArtist(artist)
+	if testartist != "" {
+		lyrics, err = getAllLyricsByArtist(&testartist)
 		if err != nil {
 			panic(err)
 		}
@@ -54,9 +61,9 @@ func Genius() {
 func getLyrics(songList []Song) ([]Lyrics, error) {
 	var allLyrics []Lyrics
 	var lyrics Lyrics
+
 	for _, song := range songList {
 		fmt.Printf("Artist: %v, Song: %v\n\n", song.Artist, song.Title)
-
 		//	build request to lyrics api
 		req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
 		if err != nil {

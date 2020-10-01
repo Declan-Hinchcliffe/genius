@@ -7,8 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 )
+
+var stripRegex = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 // allSongs represents the data structure of the response from the genius api
 type allSongsResponse struct {
@@ -154,7 +157,7 @@ func getSongs(apiSongs allSongsResponse) ([]Song, error) {
 	var songList []Song
 	for _, songs := range apiSongs.Response.Songs {
 		song := Song{
-			Title:  strings.TrimSpace(songs.Title),
+			Title:  strings.TrimSpace(stripRegex.ReplaceAllString(songs.Title, " ")),
 			Artist: strings.TrimSpace(songs.PrimaryArtist.Name),
 		}
 

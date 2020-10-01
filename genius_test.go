@@ -74,3 +74,27 @@ func TestFindWords(t *testing.T) {
 		fmt.Println(wordMap)
 	}
 }
+
+func BenchmarkGetLyrics(b *testing.B) {
+	flag := "drake"
+	for i := 0; i < b.N; i++ {
+		actual, _ := getLyricsBySearch(&flag)
+		_ = actual
+	}
+
+	// benchmark before concurrency
+	// BenchmarkGetLyrics-8   	       1	2061720173 ns/op (2.06s)
+}
+
+func BenchmarkGenius(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Genius()
+	}
+
+	// search original benchmark
+	// BenchmarkGenius-8   	       1	3145686350 ns/op (3.14s)
+
+	// artist original benchmark
+	// BenchmarkGenius-8   	       1	7300000000 ns/op (7.3s ish)
+	// BenchmarkGenius-8   	       1	5330076596 ns/op (5.3s)
+}

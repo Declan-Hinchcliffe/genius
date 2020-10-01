@@ -124,5 +124,9 @@ func searchSongs(search string) ([]Song, error) {
 		songList = append(songList, song)
 	}
 
+	for _, song := range songList {
+		fmt.Printf("%v - %v\n", song.Artist, song.Title)
+	}
+
 	return songList, nil
 }
