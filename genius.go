@@ -63,7 +63,7 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	var lyrics Lyrics
 
 	for _, song := range songList {
-		fmt.Printf("Artist: %v, Song: %v\n\n", song.Artist, song.Title)
+		fmt.Printf("%v - %v\n", song.Artist, song.Title)
 		//	build request to lyrics api
 		req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
 		if err != nil {

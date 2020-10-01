@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var stripRegex = regexp.MustCompile("[^a-zA-Z0-9]+")
+var stripRegex = regexp.MustCompile("[^a-zA-Z0-9.'$]+")
 
 // allSongs represents the data structure of the response from the genius api
 type allSongsResponse struct {
@@ -78,9 +78,9 @@ func getAllLyricsByArtist(flag *string) ([]Lyrics, error) {
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
-func getArtistID(artistFlag string) (*int, error) {
+func getArtistID(artist string) (*int, error) {
 	// url encoded flag to use in request
-	encodedSearch := url.QueryEscape(artistFlag)
+	encodedSearch := url.QueryEscape(artist)
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", encodedSearch), nil)
 	if err != nil {
@@ -112,6 +112,8 @@ func getArtistID(artistFlag string) (*int, error) {
 		return nil, errors.New("couldn't find id for given artist")
 	}
 	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
+
+	fmt.Printf("successfully retrieved id for %v - %v\n", artist, id)
 
 	return &id, nil
 }

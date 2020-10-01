@@ -72,3 +72,39 @@ func TestGetArtistID(t *testing.T) {
 
 	}
 }
+
+func BenchmarkGetAllLyricsByArtist(b *testing.B) {
+	flag := "fetty wap"
+	for i := 0; i < b.N; i++ {
+		actual, _ := getAllLyricsByArtist(&flag)
+		_ = actual
+	}
+
+	// original before concurrency
+	// BenchmarkGetAllLyricsByArtist-8   	       1	5960556438 ns/op
+	// BenchmarkGetAllLyricsByArtist-8   	       1	4302533566 ns/op
+}
+
+func BenchmarkGetArtistID(b *testing.B) {
+	flag := "chris brown"
+	for i := 0; i < b.N; i++ {
+		actual, _ := getArtistID(flag)
+		_ = actual
+	}
+
+	// original before concurrency
+	// BenchmarkGetArtistID-8   	       1	1237129692 ns/op
+	// BenchmarkGetArtistID-8   	       1	1481188656 ns/op
+
+}
+
+func BenchmarkSongsByArtist(b *testing.B) {
+	flag := 820
+	actual, _ := songsByArtist(flag)
+	_ = actual
+
+	// original before concurrency
+	// BenchmarkSongsByArtist-8   	       1	1704035128 ns/op
+	// BenchmarkSongsByArtist-8   	       1	1826186030 ns/op
+
+}
