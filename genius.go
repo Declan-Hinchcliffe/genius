@@ -57,13 +57,20 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
-	allLyrics := make([]Lyrics, 0, 20)
+	// this is hanging because when we return lyrics for artist there are 20 results
+	// when we do this via search it is only doing it 10 times
+	// therefore we get to wg.Wait() and it is waiting for 20 routines to finish
+	// and therefore hangs indefinitely
+
+	totalSongs := 20
+	allLyrics := make([]Lyrics, 0, totalSongs)
 	var lyrics Lyrics
 
 	// wait group waits for goroutines to finish
 	var wg sync.WaitGroup
-	//mu := sync.Mutex{}
-	wg.Add(len(allLyrics))
+	mu := sync.Mutex{}
+
+	wg.Add(totalSongs)
 
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
@@ -94,7 +101,9 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 				return
 			}
 
+			mu.Lock()
 			allLyrics = append(allLyrics, lyrics)
+			mu.Unlock()
 
 		}(song)
 	}
