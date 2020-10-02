@@ -114,7 +114,7 @@ func searchSongs(search string) ([]Song, error) {
 
 	// define our Song list variable and range over the songs and add the
 	// Song name and artist to the Song struct
-	var songList []Song
+	songList := make([]Song, 0, 20)
 	for _, songs := range apiSearchRepsonse.Response.Hits {
 		song := Song{
 			Title:  strings.TrimSpace(songs.Result.Title),

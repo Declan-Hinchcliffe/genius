@@ -76,9 +76,8 @@ func TestFindWords(t *testing.T) {
 }
 
 func BenchmarkGetLyrics(b *testing.B) {
-	flag := "drake"
 	for i := 0; i < b.N; i++ {
-		actual, _ := getLyricsBySearch(&flag)
+		actual, _ := getLyrics(testSongs)
 		_ = actual
 	}
 
