@@ -33,9 +33,6 @@ func Genius() {
 	word := flag.String("word", "", "specify the words you want to look for")
 	flag.Parse()
 
-	_ = artist
-	testartist := "drake"
-
 	var lyrics []Lyrics
 	var err error
 	if *search != "" {
@@ -45,8 +42,8 @@ func Genius() {
 		}
 	}
 
-	if testartist != "" {
-		lyrics, err = getAllLyricsByArtist(&testartist)
+	if *artist != "" {
+		lyrics, err = getAllLyricsByArtist(artist)
 		if err != nil {
 			panic(err)
 		}

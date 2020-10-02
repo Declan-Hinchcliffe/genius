@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/joe-bricknell/genius"
 )
 
@@ -8,10 +11,19 @@ import (
 // and will return you the number of times a given word is used within
 // the lyrics search result
 func main() {
+	start := time.Now()
+	defer func() {
+		fmt.Printf("exectution time - %v\n", time.Since(start))
+	}()
+
 	genius.Genius()
 }
 
-// todo: need to add go routines for concurrent requests
-// todo: possibly try and benchmark app to see before and after go routines?
-// todo: need to add flag for search words
-// todo: add different searches, for a specific song or something
+// todo tasks
+// need to add go routines for concurrent requests
+// need to add flag for search words
+// add different searches, for a specific song or something
+
+// Completed tasks
+// 1. add unit tests for as much as possible
+// 2. add benchmarks for all the tests
