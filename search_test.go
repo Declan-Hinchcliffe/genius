@@ -61,3 +61,29 @@ func TestSearchSongs(t *testing.T) {
 
 	}
 }
+
+func BenchmarkGetLyricsBySearch(b *testing.B) {
+	flag := "katy perry"
+	for i := 0; i < b.N; i++ {
+		actual, _ := getLyricsBySearch(&flag)
+		_ = actual
+	}
+
+	// original before concurrency
+	// BenchmarkGetLyricsBySearch-8   	       1	2443260642 ns/op
+	// BenchmarkGetLyricsBySearch-8   	       1	2378930002 ns/op
+
+}
+
+func BenchmarkSearchSongs(b *testing.B) {
+	search := "ariana+grande"
+	for i := 0; i < b.N; i++ {
+		actual, _ := searchSongs(search)
+		_ = actual
+	}
+
+	// original before concurrency
+	// BenchmarkSearchSongs-8   	       1	1106460523 ns/op
+	// BenchmarkSearchSongs-8   	       1	1122128581 ns/op
+
+}
