@@ -57,20 +57,19 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
-	var allLyrics []Lyrics
+	allLyrics := make([]Lyrics, 0, 20)
 	var lyrics Lyrics
 
 	// wait group waits for goroutines to finish
-	wg := sync.WaitGroup{}
+	var wg sync.WaitGroup
+	//mu := sync.Mutex{}
+	wg.Add(len(allLyrics))
 
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-		//	build request to lyrics api
-
-		// increment the wait group counter
-		wg.Add(1)
 
 		go func(song Song) {
+			defer wg.Done()
 			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
 			if err != nil {
 				return
@@ -97,13 +96,11 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 			allLyrics = append(allLyrics, lyrics)
 
-			// once we have appended we can say this go routine is done
-			wg.Done()
 		}(song)
-
-		// wait ensures main thread waits for all goroutines to be marked as done
-		wg.Wait()
 	}
+
+	// wait ensures main thread waits for all goroutines to be marked as done
+	wg.Wait()
 
 	return allLyrics, nil
 }
