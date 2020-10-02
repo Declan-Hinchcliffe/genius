@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type ClientGenius struct {
@@ -59,34 +60,49 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	var allLyrics []Lyrics
 	var lyrics Lyrics
 
+	// wait group waits for goroutines to finish
+	wg := sync.WaitGroup{}
+
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
 		//	build request to lyrics api
-		req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
-		if err != nil {
-			return nil, err
-		}
 
-		// make request
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
+		// increment the wait group counter
+		wg.Add(1)
 
-		defer resp.Body.Close()
+		go func(song Song) {
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
+			if err != nil {
+				return
+			}
 
-		// read body of the response
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
+			// make request
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return
+			}
 
-		// unmarshal json into lyrics struct
-		if err := json.Unmarshal(body, &lyrics); err != nil {
-			return nil, err
-		}
+			defer resp.Body.Close()
 
-		allLyrics = append(allLyrics, lyrics)
+			// read body of the response
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return
+			}
+
+			// unmarshal json into lyrics struct
+			if err := json.Unmarshal(body, &lyrics); err != nil {
+				return
+			}
+
+			allLyrics = append(allLyrics, lyrics)
+
+			// once we have appended we can say this go routine is done
+			wg.Done()
+		}(song)
+
+		// wait ensures main thread waits for all goroutines to be marked as done
+		wg.Wait()
 	}
 
 	return allLyrics, nil
