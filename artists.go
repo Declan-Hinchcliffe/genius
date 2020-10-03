@@ -156,7 +156,7 @@ func songsByArtist(id int) ([]Song, error) {
 
 // getSongs will loop over a slice of Song data and retrieve the artist and title for each Song
 func getSongs(apiSongs allSongsResponse) ([]Song, error) {
-	songList := make([]Song, 0, 20)
+	var songList []Song
 	for _, songs := range apiSongs.Response.Songs {
 		song := Song{
 			Title:  strings.TrimSpace(stripRegex.ReplaceAllString(songs.Title, " ")),

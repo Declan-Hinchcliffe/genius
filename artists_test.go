@@ -2,31 +2,29 @@ package genius
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetAllLyricsByArtist(t *testing.T) {
-	validArtist := "Kanye West"
+	validArtist := "kanye west"
 	invalidArtist := "hewbcjhwbcjhwe"
 	testCases := []struct {
-		desc           string
-		flag           *string
-		expectedLyrics []Lyrics
-		expectedErr    error
+		desc        string
+		flag        *string
+		expectedErr error
 	}{
 		{
-			desc:           "1. can successfully retrieve all lyrics by given artist",
-			flag:           &validArtist,
-			expectedLyrics: []Lyrics{testLyrics[3]},
-			expectedErr:    nil,
+			desc:        "1. can successfully retrieve all lyrics by given artist",
+			flag:        &validArtist,
+			expectedErr: nil,
 		},
 		{
-			desc:           "2. returns error as can't find artist id for given artist",
-			flag:           &invalidArtist,
-			expectedLyrics: nil,
-			expectedErr:    errors.New("couldn't find id for given artist"),
+			desc:        "2. returns error as can't find artist id for given artist",
+			flag:        &invalidArtist,
+			expectedErr: errors.New("couldn't find id for given artist"),
 		},
 	}
 
@@ -35,8 +33,9 @@ func TestGetAllLyricsByArtist(t *testing.T) {
 		if tc.expectedErr != nil {
 			assert.Equal(t, tc.expectedErr, err)
 		}
-		if lyrics != nil {
-			assert.Equal(t, tc.expectedLyrics, []Lyrics{lyrics[0]})
+		if len(lyrics) > 0 {
+			assert.NotEmpty(t, lyrics[0].Lyrics)
+			fmt.Printf("successfully found lyrics: %v\n", lyrics[0].Lyrics)
 		}
 	}
 }

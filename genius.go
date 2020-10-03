@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type ClientGenius struct {
@@ -48,7 +49,7 @@ func Genius() {
 			panic(err)
 		}
 	}
-	fmt.Println(lyrics)
+	fmt.Printf("%v\n", lyrics)
 
 	wordMap := findWords(lyrics, word)
 	displayWordCount(wordMap)
@@ -56,38 +57,56 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
-	var allLyrics []Lyrics
+	// this is hanging because when we return lyrics for artist there are 20 results
+	// when we do this via search it is only doing it 10 times
+	// therefore we get to wg.Wait() and it is waiting for 20 routines to finish
+	// and therefore hangs indefinitely
+	allLyrics := make([]Lyrics, 0, 20)
 	var lyrics Lyrics
+
+	// wait group waits for goroutines to finish
+	var wg sync.WaitGroup
+	mu := sync.Mutex{}
+
+	wg.Add(len(songList))
 
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-		//	build request to lyrics api
-		req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
-		if err != nil {
-			return nil, err
-		}
+		go func(song Song) {
+			defer wg.Done()
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
+			if err != nil {
+				return
+			}
 
-		// make request
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
+			// make request
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return
+			}
 
-		defer resp.Body.Close()
+			defer resp.Body.Close()
 
-		// read body of the response
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
+			// read body of the response
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return
+			}
 
-		// unmarshal json into lyrics struct
-		if err := json.Unmarshal(body, &lyrics); err != nil {
-			return nil, err
-		}
+			// unmarshal json into lyrics struct
+			if err := json.Unmarshal(body, &lyrics); err != nil {
+				return
+			}
 
-		allLyrics = append(allLyrics, lyrics)
+			mu.Lock()
+			allLyrics = append(allLyrics, lyrics)
+			mu.Unlock()
+
+		}(song)
 	}
+
+	// wait ensures main thread waits for all goroutines to be marked as done
+	wg.Wait()
 
 	return allLyrics, nil
 }
