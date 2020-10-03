@@ -49,7 +49,7 @@ func Genius() {
 			panic(err)
 		}
 	}
-	fmt.Println(lyrics)
+	fmt.Printf("%v\n", lyrics)
 
 	wordMap := findWords(lyrics, word)
 	displayWordCount(wordMap)
@@ -61,20 +61,17 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	// when we do this via search it is only doing it 10 times
 	// therefore we get to wg.Wait() and it is waiting for 20 routines to finish
 	// and therefore hangs indefinitely
-
-	totalSongs := 20
-	allLyrics := make([]Lyrics, 0, totalSongs)
+	allLyrics := make([]Lyrics, 0, 20)
 	var lyrics Lyrics
 
 	// wait group waits for goroutines to finish
 	var wg sync.WaitGroup
 	mu := sync.Mutex{}
 
-	wg.Add(totalSongs)
+	wg.Add(len(songList))
 
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-
 		go func(song Song) {
 			defer wg.Done()
 			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))

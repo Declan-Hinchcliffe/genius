@@ -2,7 +2,6 @@ package genius
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,7 +21,6 @@ func TestGetLyrics(t *testing.T) {
 					Artist: "Drake",
 				},
 			},
-			expectedLyrics: testLyrics,
 		},
 		{
 			desc: "2. response returns empty lyrics as api can't find song",
@@ -41,44 +39,33 @@ func TestGetLyrics(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error when calling getLyrics. err: %v", err)
 		}
-		assert.Equal(t, stripNewlineChar(tc.expectedLyrics[0].Lyrics), stripNewlineChar(lyrics[0].Lyrics))
-	}
-}
 
-func stripNewlineChar(lyrics string) string {
-	return strings.Replace(lyrics, "\r\n", " ", -1)
+		if lyrics[0].Lyrics == "" {
+			assert.Equal(t, tc.expectedLyrics, lyrics)
+		} else {
+			assert.NotEmpty(t, lyrics[0].Lyrics)
+		}
+
+	}
 }
 
 func TestFindWords(t *testing.T) {
-	testCases := []struct {
-		desc          string
-		lyrics        []Lyrics
-		expectedWords map[string]int
-	}{
-		{
-			desc:   "1. returns word map with no error",
-			lyrics: testLyrics,
-			expectedWords: map[string]int{
-				"fuckCount":  12,
-				"shitCount":  6,
-				"bitchCount": 13,
-				"pussyCount": 21,
-			},
-		},
+	expectedWords := map[string]int{
+		"fuckCount":  12,
+		"shitCount":  6,
+		"bitchCount": 13,
+		"pussyCount": 21,
 	}
 
-	for _, tc := range testCases {
-		wordMap := findWords(tc.lyrics, nil)
-		assert.Equal(t, wordMap, tc.expectedWords)
-
-		fmt.Println(wordMap)
-	}
+	wordMap := findWords(testLyrics, nil)
+	assert.Equal(t, wordMap, expectedWords)
+	fmt.Println(wordMap)
 }
 
 func BenchmarkGetLyrics(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		actual, _ := getLyrics(testSongs)
-		_ = actual
+		got, _ := getLyrics(testSongs)
+		_ = got
 	}
 
 	// benchmark before concurrency
@@ -96,4 +83,13 @@ func BenchmarkGenius(b *testing.B) {
 	// artist original benchmark
 	// BenchmarkGenius-8   	       1	7300000000 ns/op (7.3s ish)
 	// BenchmarkGenius-8   	       1	5330076596 ns/op (5.3s)
+}
+
+func BenchmarkFindWords(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		got := findWords(testLyrics, nil)
+		_ = got
+	}
+
+	// BenchmarkFindWords-8   	    1358	    881080 ns/op
 }

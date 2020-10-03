@@ -8,19 +8,18 @@ import (
 )
 
 func TestGetLyricsBySearch(t *testing.T) {
-	flag := "cardi b"
+	flag := "eminem"
 	lyrics, err := getLyricsBySearch(&flag)
 	if err != nil {
-		t.Fatalf("error when calling getLyricsBySearch. err: %v", err)
+		t.Fatalf("error calling getLyricsBySearch. err: %v", err)
 	}
 
-	if lyrics != nil {
+	if lyrics[0].Lyrics != "" {
 		fmt.Printf("successfully found lyrics: %v", lyrics[0].Lyrics)
-		assert.NotNil(t, lyrics[1])
+		assert.NotNil(t, lyrics[0].Lyrics)
 	} else {
-		panic("failed to find the lyrics try again in a minute")
+		t.Fatalf("\n found no lyrics, try again in a minute. lyrics: %v\n", lyrics)
 	}
-
 }
 
 func TestSearchSongs(t *testing.T) {
