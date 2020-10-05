@@ -57,6 +57,9 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
+	// create error channel to receive errors from go routines
+	errCh := make(chan error)
+
 	allLyrics := make([]Lyrics, 0, 20)
 	var lyrics Lyrics
 
@@ -72,12 +75,14 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 			defer wg.Done()
 			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
 			if err != nil {
+				errCh <- err
 				return
 			}
 
 			// make request
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
+				errCh <- err
 				return
 			}
 
@@ -86,11 +91,13 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 			// read body of the response
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
+				errCh <- err
 				return
 			}
 
 			// unmarshal json into lyrics struct
 			if err := json.Unmarshal(body, &lyrics); err != nil {
+				errCh <- err
 				return
 			}
 
@@ -103,6 +110,10 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 	// wait ensures main thread waits for all goroutines to be marked as done
 	wg.Wait()
+
+	if err := <-errCh; err != nil {
+		return nil, err
+	}
 
 	return allLyrics, nil
 }
