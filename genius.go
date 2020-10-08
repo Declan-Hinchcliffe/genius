@@ -87,7 +87,7 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 		go func(song Song, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex) {
 			defer wg.Done()
 
-			resp, err := makeRequest(song, client, endpoint)
+			resp, err := makeRequest(client, endpoint)
 			if err != nil {
 				errCh <- err
 				return

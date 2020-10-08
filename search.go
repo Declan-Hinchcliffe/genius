@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -88,18 +87,9 @@ func searchSongs(search string) ([]Song, error) {
 		return nil, err
 	}
 
-	// build request to genius api
-	req, err := http.NewRequest("GET", fmt.Sprintf("%v/search?q=%v", client.url, search), nil)
-	if err != nil {
-		return nil, err
-	}
+	endpoint := fmt.Sprintf("search?q=%v", search)
 
-	token := "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "Application/json")
-
-	// make request to genius api
-	resp, err := client.httpClient.Do(req)
+	resp, err := makeRequest(client, endpoint)
 	if err != nil {
 		return nil, err
 	}
