@@ -103,15 +103,15 @@ func searchSongs(search string) ([]Song, error) {
 	}
 
 	// unmarshal json into Song response struct
-	var apiSearchRepsonse apiSearchResponse
-	if err := json.Unmarshal(body, &apiSearchRepsonse); err != nil {
+	var apiSearchResponse apiSearchResponse
+	if err := json.Unmarshal(body, &apiSearchResponse); err != nil {
 		return nil, err
 	}
 
 	// define our Song list variable and range over the songs and add the
 	// Song name and artist to the Song struct
 	songList := make([]Song, 0, 20)
-	for _, songs := range apiSearchRepsonse.Response.Hits {
+	for _, songs := range apiSearchResponse.Response.Hits {
 		song := Song{
 			Title:  strings.TrimSpace(songs.Result.Title),
 			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),

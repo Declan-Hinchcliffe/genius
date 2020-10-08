@@ -63,6 +63,7 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
+	// create our custom client for lyrics api
 	client, err := New(os.Getenv("LYRICS"))
 	if err != nil {
 		return nil, err
@@ -74,7 +75,6 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	allLyrics := make([]Lyrics, 0, 20)
 	var lyrics Lyrics
 
-	// wait group waits for goroutines to finish
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
