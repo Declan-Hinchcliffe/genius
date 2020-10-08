@@ -6,15 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
-type ClientGenius struct {
-	client      *http.Client
-	baseURL     string
-	secretToken string
+var client = &http.Client{
+	Timeout: time.Second * 5,
 }
 
 // Song represents a Song returned from the API
@@ -57,27 +55,32 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
+	// create error channel to receive errors from go routines
+	errCh := make(chan error)
+
 	allLyrics := make([]Lyrics, 0, 20)
 	var lyrics Lyrics
 
 	// wait group waits for goroutines to finish
 	var wg sync.WaitGroup
-	mu := sync.Mutex{}
+	var mu sync.Mutex
 
 	wg.Add(len(songList))
 
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-		go func(song Song) {
+		go func(song Song, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex) {
 			defer wg.Done()
 			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
 			if err != nil {
+				errCh <- err
 				return
 			}
 
 			// make request
-			resp, err := http.DefaultClient.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
+				errCh <- err
 				return
 			}
 
@@ -86,11 +89,13 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 			// read body of the response
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
+				errCh <- err
 				return
 			}
 
 			// unmarshal json into lyrics struct
 			if err := json.Unmarshal(body, &lyrics); err != nil {
+				errCh <- err
 				return
 			}
 
@@ -98,77 +103,21 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 			allLyrics = append(allLyrics, lyrics)
 			mu.Unlock()
 
-		}(song)
+		}(song, errCh, &wg, &mu)
 	}
 
-	// wait ensures main thread waits for all goroutines to be marked as done
-	wg.Wait()
+	// need to place this into a go routine otherwise blocks here before values are pulled off
+	// without this we would hit a deadlock
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	// we range the errCh to see if there are multiple errors
+	// this will return the first error
+	for err := range errCh {
+		return nil, err
+	}
 
 	return allLyrics, nil
-}
-
-// findWords will search through the lyrics and count the number of matches
-// for particular words
-func findWords(allLyrics []Lyrics, flag *string) map[string]int {
-	//wordFlags := strings.Fields(*flag)
-	//fmt.Println("wordflags:", wordFlags)
-
-	var lyricCount int
-	var fuckCount int
-	var shitCount int
-	var bitchCount int
-	var pussyCount int
-
-	for _, lyrics := range allLyrics {
-		for _, word := range strings.Fields(lyrics.Lyrics) {
-			lyricCount++
-			switch {
-			case
-				strings.Contains(strings.ToLower(word), "fuck"),
-				strings.Contains(strings.ToLower(word), "f-ck"),
-				strings.Contains(strings.ToLower(word), "f*ck"):
-				fuckCount++
-			case strings.Contains(strings.ToLower(word), "shit"):
-				shitCount++
-			case
-				strings.Contains(strings.ToLower(word), "bitch"),
-				strings.Contains(strings.ToLower(word), "b*tch"),
-				strings.Contains(strings.ToLower(word), "b-tch"):
-				bitchCount++
-			case
-				strings.Contains(strings.ToLower(word), "pussy"),
-				strings.Contains(strings.ToLower(word), "p*ssy"),
-				strings.Contains(strings.ToLower(word), "p-ssy"):
-				pussyCount++
-			}
-
-		}
-	}
-
-	fmt.Printf("total words counted: %v\n", lyricCount)
-
-	wordMap := map[string]int{
-		"fuckCount":  fuckCount,
-		"shitCount":  shitCount,
-		"bitchCount": bitchCount,
-		"pussyCount": pussyCount,
-	}
-
-	return wordMap
-}
-
-func displayWordCount(wordMap map[string]int) {
-	// we range over the map to get the keys and store them in a slice
-	keys := make([]string, 0, len(wordMap))
-	for k := range wordMap {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-	fmt.Printf("%v:%v,\n%v:%v,\n%v:%v,\n%v:%v\n",
-		keys[0], wordMap[keys[0]],
-		keys[1], wordMap[keys[1]],
-		keys[2], wordMap[keys[2]],
-		keys[3], wordMap[keys[3]])
-
 }
