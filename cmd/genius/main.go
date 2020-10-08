@@ -2,10 +2,22 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
+
+	"github.com/joho/godotenv"
 
 	"github.com/joe-bricknell/genius"
 )
+
+// init loads env vars in .env
+func init() {
+	var err error
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalln("error when loading .env")
+	}
+}
 
 // This project will allow you to search for a particular artist or term
 // and will return you the number of times a given word is used within

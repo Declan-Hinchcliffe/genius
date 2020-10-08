@@ -6,13 +6,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
-	"time"
 )
 
-var client = &http.Client{
-	Timeout: time.Second * 5,
+type CustomClient struct {
+	httpClient *http.Client
+	url        string
+}
+
+// New creates a new custom client
+func New(url string) (CustomClient, error) {
+	return CustomClient{
+		httpClient: client,
+		url:        url,
+	}, nil
 }
 
 // Song represents a Song returned from the API
@@ -55,6 +64,11 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
+	client, err := New(os.Getenv("LYRICS"))
+	if err != nil {
+		return nil, err
+	}
+
 	// create error channel to receive errors from go routines
 	errCh := make(chan error)
 
@@ -71,14 +85,8 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
 		go func(song Song, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex) {
 			defer wg.Done()
-			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.lyrics.ovh/v1/%v/%v", song.Artist, song.Title), strings.NewReader(""))
-			if err != nil {
-				errCh <- err
-				return
-			}
 
-			// make request
-			resp, err := client.Do(req)
+			resp, err := makeRequest(song, client)
 			if err != nil {
 				errCh <- err
 				return
@@ -120,4 +128,19 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	}
 
 	return allLyrics, nil
+}
+
+func makeRequest(song Song, c CustomClient) (*http.Response, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v/%v", c.url, song.Artist, song.Title), strings.NewReader(""))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+
+		return nil, err
+	}
+
+	return resp, nil
 }
