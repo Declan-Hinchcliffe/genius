@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
 )
 
@@ -82,11 +81,13 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	wg.Add(len(songList))
 
 	for _, song := range songList {
+		endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
+
 		go func(song Song, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex) {
 			defer wg.Done()
 
-			resp, err := makeRequest(song, client)
+			resp, err := makeRequest(song, client, endpoint)
 			if err != nil {
 				errCh <- err
 				return
@@ -128,19 +129,4 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	}
 
 	return allLyrics, nil
-}
-
-func makeRequest(song Song, c CustomClient) (*http.Response, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v/%v", c.url, song.Artist, song.Title), strings.NewReader(""))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-
-		return nil, err
-	}
-
-	return resp, nil
 }

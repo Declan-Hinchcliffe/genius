@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -82,8 +83,13 @@ func getLyricsBySearch(flag *string) ([]Lyrics, error) {
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
 func searchSongs(search string) ([]Song, error) {
+	client, err := New(os.Getenv("GENIUS"))
+	if err != nil {
+		return nil, err
+	}
+
 	// build request to genius api
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%v/search?q=%v", client.url, search), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +99,7 @@ func searchSongs(search string) ([]Song, error) {
 	req.Header.Set("Content-Type", "Application/json")
 
 	// make request to genius api
-	resp, err := client.Do(req)
+	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
