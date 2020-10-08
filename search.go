@@ -93,7 +93,7 @@ func searchSongs(search string) ([]Song, error) {
 	req.Header.Set("Content-Type", "Application/json")
 
 	// make request to genius api
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

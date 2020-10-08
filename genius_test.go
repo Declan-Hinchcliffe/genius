@@ -40,7 +40,7 @@ func TestGetLyrics(t *testing.T) {
 			t.Fatalf("error when calling getLyrics. err: %v", err)
 		}
 
-		if lyrics[0].Lyrics == "" {
+		if tc.expectedLyrics != nil {
 			assert.Equal(t, tc.expectedLyrics, lyrics)
 		} else {
 			assert.NotEmpty(t, lyrics[0].Lyrics)
