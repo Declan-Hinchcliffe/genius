@@ -55,7 +55,7 @@ func Genius() {
 			panic(err)
 		}
 	}
-	fmt.Printf("%v\n", lyrics)
+	fmt.Printf("\n%v\n", lyrics)
 
 	wordMap := findWords(lyrics, word)
 	displayWordCount(wordMap)
@@ -71,9 +71,9 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 	// create error channel to receive errors from go routines
 	errCh := make(chan error)
+	outCh := make(chan Lyrics)
 
 	allLyrics := make([]Lyrics, 0, 20)
-	var lyrics Lyrics
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -83,36 +83,7 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	for _, song := range songList {
 		endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-
-		go func(song Song, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex) {
-			defer wg.Done()
-
-			resp, err := makeRequest(client, endpoint)
-			if err != nil {
-				errCh <- err
-				return
-			}
-
-			defer resp.Body.Close()
-
-			// read body of the response
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				errCh <- err
-				return
-			}
-
-			// unmarshal json into lyrics struct
-			if err := json.Unmarshal(body, &lyrics); err != nil {
-				errCh <- err
-				return
-			}
-
-			mu.Lock()
-			allLyrics = append(allLyrics, lyrics)
-			mu.Unlock()
-
-		}(song, errCh, &wg, &mu)
+		go doRequests(outCh, errCh, &wg, &mu, client, endpoint)
 	}
 
 	// need to place this into a go routine otherwise blocks here before values are pulled off
@@ -120,6 +91,13 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	go func() {
 		wg.Wait()
 		close(errCh)
+		close(outCh)
+	}()
+
+	go func() {
+		for lyrics := range outCh {
+			allLyrics = append(allLyrics, lyrics)
+		}
 	}()
 
 	// we range the errCh to see if there are multiple errors
@@ -129,4 +107,33 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	}
 
 	return allLyrics, nil
+}
+
+func doRequests(outCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex, client CustomClient, endpoint string) {
+	defer wg.Done()
+	var lyrics Lyrics
+
+	resp, err := makeRequest(client, endpoint)
+	if err != nil {
+		errCh <- err
+		return
+	}
+
+	defer resp.Body.Close()
+
+	// read body of the response
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		errCh <- err
+		return
+	}
+
+	// unmarshal json into lyrics struct
+	if err := json.Unmarshal(body, &lyrics); err != nil {
+		errCh <- err
+		return
+	}
+
+	outCh <- lyrics
+
 }
