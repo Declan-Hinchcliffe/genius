@@ -69,11 +69,11 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 		return nil, err
 	}
 
-	// create error channel to receive errors from go routines
+	// create out and error channel to receive errors from go routines
 	errCh := make(chan error)
+	outCh := make(chan Lyrics, 1)
 
 	allLyrics := make([]Lyrics, 0, 20)
-	var lyrics Lyrics
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -84,42 +84,24 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 		endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
 
-		go func(song Song, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex) {
-			defer wg.Done()
-
-			resp, err := makeRequest(client, endpoint)
-			if err != nil {
-				errCh <- err
-				return
-			}
-
-			defer resp.Body.Close()
-
-			// read body of the response
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				errCh <- err
-				return
-			}
-
-			// unmarshal json into lyrics struct
-			if err := json.Unmarshal(body, &lyrics); err != nil {
-				errCh <- err
-				return
-			}
-
-			mu.Lock()
-			allLyrics = append(allLyrics, lyrics)
-			mu.Unlock()
-
-		}(song, errCh, &wg, &mu)
+		go doRequests(errCh, outCh, client, endpoint)
 	}
+
+	go func() {
+		for lyric := range outCh {
+			mu.Lock()
+			allLyrics = append(allLyrics, lyric)
+			mu.Unlock()
+			wg.Done()
+		}
+	}()
 
 	// need to place this into a go routine otherwise blocks here before values are pulled off
 	// without this we would hit a deadlock
 	go func() {
 		wg.Wait()
 		close(errCh)
+		close(outCh)
 	}()
 
 	// we range the errCh to see if there are multiple errors
@@ -129,4 +111,29 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	}
 
 	return allLyrics, nil
+}
+
+func doRequests(errCh chan<- error, outCh chan<- Lyrics, client CustomClient, endpoint string) {
+	var lyrics Lyrics
+
+	resp, err := makeRequest(client, endpoint)
+	if err != nil {
+		errCh <- err
+		return
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		errCh <- err
+		return
+	}
+
+	if err := json.Unmarshal(body, &lyrics); err != nil {
+		errCh <- err
+		return
+	}
+
+	outCh <- lyrics
 }
