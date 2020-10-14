@@ -37,7 +37,7 @@ type Lyrics struct {
 func Genius() {
 	search := flag.String("search", "", "specify your search term")
 	artist := flag.String("artist", "", "specify your artist")
-	word := flag.String("word", "", "specify the words you want to look for")
+	words := flag.String("words", "", "specify the words you want to look for")
 	flag.Parse()
 
 	var lyrics []Lyrics
@@ -57,8 +57,7 @@ func Genius() {
 	}
 	fmt.Printf("\n%v\n", lyrics)
 
-	wordMap := findWords(lyrics, word)
-	displayWordCount(wordMap)
+	findWords(lyrics, words)
 }
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song

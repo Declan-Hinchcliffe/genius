@@ -3,12 +3,9 @@ package genius
 import (
 	"fmt"
 	"net/http"
-	"time"
 )
 
-var client = &http.Client{
-	Timeout: time.Second * 5,
-}
+var client = &http.Client{}
 
 func makeRequest(c CustomClient, endpoint string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", c.url, endpoint), nil)
