@@ -3,7 +3,10 @@ package genius
 import (
 	"errors"
 	"fmt"
+	"log"
 	"testing"
+
+	"github.com/joho/godotenv"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,6 +32,7 @@ func TestGetAllLyricsByArtist(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		loadEnv()
 		lyrics, err := getAllLyricsByArtist(tc.flag)
 		if tc.expectedErr != nil {
 			assert.Equal(t, tc.expectedErr, err)
@@ -63,7 +67,12 @@ func TestGetArtistID(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		id, err := getArtistID(tc.flag)
+		c := CustomClient{
+			httpClient: client,
+			url:        "https://api.genius.com",
+		}
+
+		id, err := getArtistID(tc.flag, c)
 		if tc.expectedErr != nil {
 			assert.Equal(t, tc.expectedErr, err)
 		}
@@ -86,8 +95,13 @@ func BenchmarkGetAllLyricsByArtist(b *testing.B) {
 
 func BenchmarkGetArtistID(b *testing.B) {
 	flag := "chris brown"
+	c := CustomClient{
+		url:        "https://api.genius.com",
+		httpClient: client,
+	}
+
 	for i := 0; i < b.N; i++ {
-		actual, _ := getArtistID(flag)
+		actual, _ := getArtistID(flag, c)
 		_ = actual
 	}
 
@@ -99,11 +113,23 @@ func BenchmarkGetArtistID(b *testing.B) {
 
 func BenchmarkSongsByArtist(b *testing.B) {
 	flag := 820
-	actual, _ := songsByArtist(flag)
+	c := CustomClient{
+		url:        "https://api.genius.com",
+		httpClient: client,
+	}
+	actual, _ := songsByArtist(flag, c)
 	_ = actual
 
 	// original before concurrency
 	// BenchmarkSongsByArtist-8   	       1	1704035128 ns/op
 	// BenchmarkSongsByArtist-8   	       1	1826186030 ns/op
 
+}
+
+func loadEnv() {
+	var err error
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Fatalln("error when loading .env")
+	}
 }

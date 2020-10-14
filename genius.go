@@ -63,7 +63,6 @@ func Genius() {
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
-	// create our custom client for lyrics api
 	client, err := New(os.Getenv("LYRICS"))
 	if err != nil {
 		return nil, err
@@ -76,14 +75,13 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	allLyrics := make([]Lyrics, 0, 20)
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
 
 	wg.Add(len(songList))
 
 	for _, song := range songList {
 		endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-		go doRequests(outCh, errCh, &wg, &mu, client, endpoint)
+		go doRequests(outCh, errCh, &wg, client, endpoint)
 	}
 
 	// need to place this into a go routine otherwise blocks here before values are pulled off
@@ -109,7 +107,7 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	return allLyrics, nil
 }
 
-func doRequests(outCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, mu *sync.Mutex, client CustomClient, endpoint string) {
+func doRequests(outCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, client CustomClient, endpoint string) {
 	defer wg.Done()
 	var lyrics Lyrics
 
