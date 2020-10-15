@@ -9,6 +9,7 @@ import (
 
 func TestGetLyricsBySearch(t *testing.T) {
 	flag := "eminem"
+	loadEnv()
 	lyrics, err := getLyricsBySearch(&flag)
 	if err != nil {
 		t.Fatalf("error calling getLyricsBySearch. err: %v", err)

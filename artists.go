@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -59,12 +59,17 @@ type allSongsResponse struct {
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
 func getAllLyricsByArtist(flag *string) ([]Lyrics, error) {
-	id, err := getArtistID(*flag)
+	client, err := New(os.Getenv("GENIUS"))
 	if err != nil {
 		return nil, err
 	}
 
-	songs, err := songsByArtist(*id)
+	id, err := getArtistID(*flag, client)
+	if err != nil {
+		return nil, err
+	}
+
+	songs, err := songsByArtist(*id, client)
 	if err != nil {
 		return nil, err
 	}
@@ -78,20 +83,10 @@ func getAllLyricsByArtist(flag *string) ([]Lyrics, error) {
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
-func getArtistID(artist string) (*int, error) {
-	// url encoded flag to use in request
-	encodedSearch := url.QueryEscape(artist)
+func getArtistID(artist string, client CustomClient) (*int, error) {
+	endpoint := fmt.Sprintf("search?q=%v", url.QueryEscape(artist))
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", encodedSearch), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	token := "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "Application/json")
-
-	resp, err := client.Do(req)
+	resp, err := makeRequest(client, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -119,21 +114,13 @@ func getArtistID(artist string) (*int, error) {
 }
 
 // songsByArtist will retrieve all the songs by an artist using the artist id
-func songsByArtist(id int) ([]Song, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/artists/%v/songs?sort=popularity", id), nil)
+func songsByArtist(id int, client CustomClient) ([]Song, error) {
+	endpoint := fmt.Sprintf("artists/%v/songs?sort=popularity", id)
+
+	resp, err := makeRequest(client, endpoint)
 	if err != nil {
 		return nil, err
 	}
-
-	token := "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "Application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)

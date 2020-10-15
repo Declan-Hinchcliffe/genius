@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -82,18 +82,14 @@ func getLyricsBySearch(flag *string) ([]Lyrics, error) {
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
 func searchSongs(search string) ([]Song, error) {
-	// build request to genius api
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%v", search), nil)
+	client, err := New(os.Getenv("GENIUS"))
 	if err != nil {
 		return nil, err
 	}
 
-	token := "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "Application/json")
+	endpoint := fmt.Sprintf("search?q=%v", search)
 
-	// make request to genius api
-	resp, err := client.Do(req)
+	resp, err := makeRequest(client, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -107,15 +103,15 @@ func searchSongs(search string) ([]Song, error) {
 	}
 
 	// unmarshal json into Song response struct
-	var apiSearchRepsonse apiSearchResponse
-	if err := json.Unmarshal(body, &apiSearchRepsonse); err != nil {
+	var apiSearchResponse apiSearchResponse
+	if err := json.Unmarshal(body, &apiSearchResponse); err != nil {
 		return nil, err
 	}
 
 	// define our Song list variable and range over the songs and add the
 	// Song name and artist to the Song struct
 	songList := make([]Song, 0, 20)
-	for _, songs := range apiSearchRepsonse.Response.Hits {
+	for _, songs := range apiSearchResponse.Response.Hits {
 		song := Song{
 			Title:  strings.TrimSpace(songs.Result.Title),
 			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
