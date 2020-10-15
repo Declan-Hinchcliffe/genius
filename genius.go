@@ -69,7 +69,7 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 	// create error channel to receive errors from go routines
 	errCh := make(chan error)
-	outCh := make(chan Lyrics)
+	resultCh := make(chan Lyrics)
 
 	allLyrics := make([]Lyrics, 0, 20)
 
@@ -78,9 +78,8 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	wg.Add(len(songList))
 
 	for _, song := range songList {
-		endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-		go doRequests(outCh, errCh, &wg, client, endpoint)
+		go doRequests(resultCh, errCh, &wg, client, song)
 	}
 
 	// need to place this into a go routine otherwise blocks here before values are pulled off
@@ -88,11 +87,11 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	go func() {
 		wg.Wait()
 		close(errCh)
-		close(outCh)
+		close(resultCh)
 	}()
 
 	go func() {
-		for lyrics := range outCh {
+		for lyrics := range resultCh {
 			allLyrics = append(allLyrics, lyrics)
 		}
 	}()
@@ -106,9 +105,10 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	return allLyrics, nil
 }
 
-func doRequests(outCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, client CustomClient, endpoint string) {
+func doRequests(resultCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, client CustomClient, song Song) {
 	defer wg.Done()
 	var lyrics Lyrics
+	endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 
 	resp, err := makeRequest(client, endpoint)
 	if err != nil {
@@ -131,6 +131,10 @@ func doRequests(outCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, cli
 		return
 	}
 
-	outCh <- lyrics
+	if lyrics.Lyrics == "" {
+		fmt.Printf("failed to find lyrics for: %v - %v\n", song.Artist, song.Title)
+	}
+
+	resultCh <- lyrics
 
 }
