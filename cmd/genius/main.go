@@ -32,10 +32,12 @@ func main() {
 }
 
 // todo tasks
-// need to add flag for search words
 // add different searches, for a specific song or something
+// make server? different routes
+// add database? could cache song lyrics and return them quickly?
 
 // Completed tasks
 // 1. add unit tests for as much as possible
 // 2. add benchmarks for all the tests
-// 3. need to add go routines for concurrent requests
+// 3. need to add go routines for concurrent
+// need to add flag for search words
