@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -27,6 +28,14 @@ func main() {
 	defer func() {
 		fmt.Printf("exectution time - %v\n", time.Since(start))
 	}()
+
+	r := genius.Router()
+
+	fmt.Println("starting server on port 9000...")
+
+	if err := http.ListenAndServe(":9000", r); err != nil {
+		log.Fatalf("failed to start server (err: %v)", err)
+	}
 
 	genius.Genius()
 }
