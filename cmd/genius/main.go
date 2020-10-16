@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/joho/godotenv"
-
-	"github.com/joe-bricknell/genius"
 )
 
 // init loads env vars in .env
@@ -28,14 +27,22 @@ func main() {
 		fmt.Printf("exectution time - %v\n", time.Since(start))
 	}()
 
-	genius.Genius()
+	r := NewRouter()
+
+	fmt.Println("starting server on port 9000...")
+
+	if err := http.ListenAndServe(":9000", r); err != nil {
+		log.Fatalf("failed to start server (err: %v)", err)
+	}
 }
 
 // todo tasks
-// need to add flag for search words
 // add different searches, for a specific song or something
+// make server? different routes
+// add database? could cache song lyrics and return them quickly?
 
 // Completed tasks
 // 1. add unit tests for as much as possible
 // 2. add benchmarks for all the tests
-// 3. need to add go routines for concurrent requests
+// 3. need to add go routines for concurrent
+// need to add flag for search words
