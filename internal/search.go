@@ -1,4 +1,4 @@
-package genius
+package internal
 
 import (
 	"encoding/json"
@@ -331,10 +331,10 @@ type singleSongResponse struct {
 
 // GetLyricsBySearch will call to the genius api to get the songs and then call
 // to the lyrics api to get the lyrics
-func getLyricsBySearch(flag string) ([]Lyrics, error) {
+func GetLyricsBySearch(flag string) ([]Lyrics, error) {
 	encodedSearch := url.QueryEscape(flag)
 
-	searchResp, err := searchSongs(encodedSearch)
+	searchResp, err := SearchSongs(encodedSearch)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +356,7 @@ func getLyricsBySearch(flag string) ([]Lyrics, error) {
 
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
-func searchSongs(search string) (*apiSearchResponse, error) {
+func SearchSongs(search string) (*apiSearchResponse, error) {
 	endpoint := fmt.Sprintf("search?q=%v", url.QueryEscape(search))
 
 	fmt.Println(endpoint)
@@ -403,7 +403,7 @@ func shortenSongResponse(resp apiSearchResponse) ([]Song, error) {
 	return songList, nil
 }
 
-func getOneSong(songs apiSearchResponse) (*Song, error) {
+func GetOneSong(songs apiSearchResponse) (*Song, error) {
 	var songID int
 
 	if songs.Response.Hits == nil {

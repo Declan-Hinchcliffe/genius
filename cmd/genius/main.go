@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-
-	"github.com/joe-bricknell/genius"
 )
 
 // init loads env vars in .env
@@ -29,15 +27,13 @@ func main() {
 		fmt.Printf("exectution time - %v\n", time.Since(start))
 	}()
 
-	r := genius.Router()
+	r := NewRouter()
 
 	fmt.Println("starting server on port 9000...")
 
 	if err := http.ListenAndServe(":9000", r); err != nil {
 		log.Fatalf("failed to start server (err: %v)", err)
 	}
-
-	genius.Genius()
 }
 
 // todo tasks

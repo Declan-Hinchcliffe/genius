@@ -1,4 +1,4 @@
-package genius
+package internal
 
 import (
 	"errors"
@@ -33,7 +33,7 @@ func TestGetAllLyricsByArtist(t *testing.T) {
 
 	for _, tc := range testCases {
 		loadEnv()
-		lyrics, err := getAllLyricsByArtist(tc.flag)
+		lyrics, err := GetAllLyricsByArtist(tc.flag)
 		if tc.expectedErr != nil {
 			assert.Equal(t, tc.expectedErr, err)
 		}
@@ -72,7 +72,7 @@ func TestGetArtistID(t *testing.T) {
 			url:        "https://api.genius.com",
 		}
 
-		id, err := getArtistID(tc.flag, c)
+		id, err := GetArtistID(tc.flag, c)
 		if tc.expectedErr != nil {
 			assert.Equal(t, tc.expectedErr, err)
 		}
@@ -84,7 +84,7 @@ func TestGetArtistID(t *testing.T) {
 func BenchmarkGetAllLyricsByArtist(b *testing.B) {
 	flag := "fetty wap"
 	for i := 0; i < b.N; i++ {
-		actual, _ := getAllLyricsByArtist(&flag)
+		actual, _ := GetAllLyricsByArtist(&flag)
 		_ = actual
 	}
 
@@ -101,7 +101,7 @@ func BenchmarkGetArtistID(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		actual, _ := getArtistID(flag, c)
+		actual, _ := GetArtistID(flag, c)
 		_ = actual
 	}
 
@@ -117,7 +117,7 @@ func BenchmarkSongsByArtist(b *testing.B) {
 		url:        "https://api.genius.com",
 		httpClient: client,
 	}
-	actual, _ := songsByArtist(flag, c)
+	actual, _ := SongsByArtist(flag, c)
 	_ = actual
 
 	// original before concurrency

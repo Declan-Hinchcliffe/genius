@@ -1,12 +1,28 @@
-package genius
+package internal
 
 import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
-var client = &http.Client{}
+var client = &http.Client{
+	Timeout: time.Second * 10,
+}
+
+type CustomClient struct {
+	httpClient *http.Client
+	url        string
+}
+
+// New creates a new custom client
+func New(url string) (CustomClient, error) {
+	return CustomClient{
+		httpClient: client,
+		url:        url,
+	}, nil
+}
 
 func makeRequestGenius(endpoint string) (*http.Response, error) {
 	c, err := New(os.Getenv("GENIUS"))

@@ -1,26 +1,11 @@
-package genius
+package internal
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"sync"
 )
-
-type CustomClient struct {
-	httpClient *http.Client
-	url        string
-}
-
-// New creates a new custom client
-func New(url string) (CustomClient, error) {
-	return CustomClient{
-		httpClient: client,
-		url:        url,
-	}, nil
-}
 
 // Song represents a Song returned from the API
 type Song struct {
@@ -31,17 +16,6 @@ type Song struct {
 // Lyrics represents the lyrics returned from the lyric api
 type Lyrics struct {
 	Lyrics string `json:"lyrics"`
-}
-
-func Genius() {
-
-	flag.Parse()
-
-	var lyrics []Lyrics
-
-	fmt.Printf("\n%v\n", lyrics)
-
-	//findWords(lyrics, words)
 }
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
@@ -73,8 +47,6 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 		}
 	}()
 
-	// we range the errCh to see if there are multiple errors
-	// this will return the first error
 	for err := range errCh {
 		return nil, err
 	}
@@ -82,7 +54,8 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	return allLyrics, nil
 }
 
-func getLyricsOneSong(song Song) (*Lyrics, error) {
+// GetLyricsOneSong will retrieve the lyrics for a given song
+func GetLyricsForSingleSong(song Song) (*Lyrics, error) {
 	errCh := make(chan error)
 	resultCh := make(chan Lyrics)
 

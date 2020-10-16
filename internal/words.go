@@ -1,4 +1,4 @@
-package genius
+package internal
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func findWords(w http.ResponseWriter, allLyrics []Lyrics, flag *string) {
+func FindWords(w http.ResponseWriter, allLyrics []Lyrics, flag *string) {
 	wordsFlag := strings.Fields(*flag)
 	wordCounter := make([]int, len(wordsFlag))
 	var numOfWords int

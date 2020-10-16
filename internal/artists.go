@@ -1,4 +1,4 @@
-package genius
+package internal
 
 import (
 	"encoding/json"
@@ -57,13 +57,13 @@ type allSongsResponse struct {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func getAllLyricsByArtist(artist string) ([]Lyrics, error) {
-	id, err := getArtistID(artist)
+func GetAllLyricsByArtist(artist string) ([]Lyrics, error) {
+	id, err := GetArtistID(artist)
 	if err != nil {
 		return nil, err
 	}
 
-	songs, err := songsByArtist(*id)
+	songs, err := SongsByArtist(*id)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func getAllLyricsByArtist(artist string) ([]Lyrics, error) {
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
-func getArtistID(artist string) (*int, error) {
+func GetArtistID(artist string) (*int, error) {
 	endpoint := fmt.Sprintf("search?q=%v", url.QueryEscape(artist))
 
 	resp, err := makeRequestGenius(endpoint)
@@ -108,7 +108,7 @@ func getArtistID(artist string) (*int, error) {
 }
 
 // songsByArtist will retrieve all the songs by an artist using the artist id
-func songsByArtist(id int) ([]Song, error) {
+func SongsByArtist(id int) ([]Song, error) {
 	endpoint := fmt.Sprintf("artists/%v/songs?sort=popularity", id)
 
 	resp, err := makeRequestGenius(endpoint)
@@ -127,7 +127,7 @@ func songsByArtist(id int) ([]Song, error) {
 		return nil, err
 	}
 
-	songList, err := getSongs(apiSongs)
+	songList, err := getSongsForArtist(apiSongs)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func songsByArtist(id int) ([]Song, error) {
 }
 
 // getSongs will loop over a slice of Song data and retrieve the artist and title for each Song
-func getSongs(apiSongs allSongsResponse) ([]Song, error) {
+func getSongsForArtist(apiSongs allSongsResponse) ([]Song, error) {
 	var songList []Song
 	for _, songs := range apiSongs.Response.Songs {
 		song := Song{

@@ -1,43 +1,27 @@
-package genius
+package main
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/joe-bricknell/genius/internal"
 )
-
-func Router() *mux.Router {
-	router := mux.NewRouter()
-	router.HandleFunc("/home", homeHandler)
-
-	// looking for songs/lyrics by artist
-	router.HandleFunc("/songs/{artist}", GetAllSongs).Methods("GET")
-	router.HandleFunc("/songs/lyrics/{artist}", GetLyricsByArtist).Methods("GET")
-
-	// looking for one song or one song lyrics
-	router.HandleFunc("/lyrics/{song}", GetLyricsOneSong).Methods("GET")
-	router.HandleFunc("/lyrics/{search}", GetLyricsBySearch).Methods("GET")
-
-	// looking via search
-	router.HandleFunc("/search/{song}", GetOneSongBySearch).Methods("GET")
-
-	return router
-}
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "home page coming soon...")
 }
 
+// GetAllSongs will get the top 20 songs by a given artist
 func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	id, err := getArtistID(vars["artist"])
+	id, err := internal.GetArtistID(vars["search"])
 	if err != nil {
 		panic(err)
 	}
 
-	songs, err := songsByArtist(*id)
+	songs, err := internal.SongsByArtist(*id)
 	if err != nil {
 		panic(err)
 	}
@@ -47,31 +31,33 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetLyricsByArtist will get the lyrics to the top 20 songs by a particular artist
 func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	words := "hello and the"
 
-	var lyrics []Lyrics
+	var lyrics []internal.Lyrics
 	var err error
-	lyrics, err = getAllLyricsByArtist(vars["artist"])
+	lyrics, err = internal.GetAllLyricsByArtist(vars["artist"])
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Fprintf(w, "\n%v\n", lyrics)
 
-	findWords(w, lyrics, &words)
+	internal.FindWords(w, lyrics, &words)
 }
 
+// GetLyricsBySearch will get all the lyrics for the 20 results of a given search
 func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 	//search := flag.String("search", "", "specify your search term")
 	//flag.Parse()
 
 	vars := mux.Vars(r)
 
-	var lyrics []Lyrics
+	var lyrics []internal.Lyrics
 	var err error
-	lyrics, err = getLyricsBySearch(vars["search"])
+	lyrics, err = internal.GetLyricsBySearch(vars["search"])
 	if err != nil {
 		panic(err)
 	}
@@ -79,14 +65,16 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "\n%v\n", lyrics)
 }
 
+// GetOneSongBySearch will return the closest match to a given song from a
+// search result of 20
 func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	songs, err := searchSongs(vars["song"])
+	songs, err := internal.SearchSongs(vars["song"])
 	if err != nil {
 		panic(err)
 	}
 
-	song, err := getOneSong(*songs)
+	song, err := internal.GetOneSong(*songs)
 	if err != nil {
 		panic(err)
 	}
@@ -95,19 +83,21 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetLyricsOneSong will retrieve the lyrics for one song by searching all songs, find
+// the given song and find the lyrics for this song
 func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	songs, err := searchSongs(vars["song"])
+	songs, err := internal.SearchSongs(vars["song"])
 	if err != nil {
 		panic(err)
 	}
 
-	song, err := getOneSong(*songs)
+	song, err := internal.GetOneSong(*songs)
 	if err != nil {
 		panic(err)
 	}
 
-	lyrics, err := getLyricsOneSong(*song)
+	lyrics, err := internal.GetLyricsForSingleSong(*song)
 	if err != nil {
 		panic(err)
 	}
