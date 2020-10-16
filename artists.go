@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -58,18 +57,13 @@ type allSongsResponse struct {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func getAllLyricsByArtist(flag *string) ([]Lyrics, error) {
-	client, err := New(os.Getenv("GENIUS"))
+func getAllLyricsByArtist(artist string) ([]Lyrics, error) {
+	id, err := getArtistID(artist)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := getArtistID(*flag, client)
-	if err != nil {
-		return nil, err
-	}
-
-	songs, err := songsByArtist(*id, client)
+	songs, err := songsByArtist(*id)
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +77,10 @@ func getAllLyricsByArtist(flag *string) ([]Lyrics, error) {
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
-func getArtistID(artist string, client CustomClient) (*int, error) {
+func getArtistID(artist string) (*int, error) {
 	endpoint := fmt.Sprintf("search?q=%v", url.QueryEscape(artist))
 
-	resp, err := makeRequest(client, endpoint)
+	resp, err := makeRequestGenius(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +108,10 @@ func getArtistID(artist string, client CustomClient) (*int, error) {
 }
 
 // songsByArtist will retrieve all the songs by an artist using the artist id
-func songsByArtist(id int, client CustomClient) ([]Song, error) {
+func songsByArtist(id int) ([]Song, error) {
 	endpoint := fmt.Sprintf("artists/%v/songs?sort=popularity", id)
 
-	resp, err := makeRequest(client, endpoint)
+	resp, err := makeRequestGenius(endpoint)
 	if err != nil {
 		return nil, err
 	}

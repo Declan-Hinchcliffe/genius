@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"sync"
 )
 
@@ -35,38 +34,18 @@ type Lyrics struct {
 }
 
 func Genius() {
-	search := flag.String("search", "", "specify your search term")
-	artist := flag.String("artist", "", "specify your artist")
-	words := flag.String("words", "", "specify the words you want to look for")
+
 	flag.Parse()
 
 	var lyrics []Lyrics
-	var err error
-	if *search != "" {
-		lyrics, err = getLyricsBySearch(search)
-		if err != nil {
-			panic(err)
-		}
-	}
 
-	if *artist != "" {
-		lyrics, err = getAllLyricsByArtist(artist)
-		if err != nil {
-			panic(err)
-		}
-	}
 	fmt.Printf("\n%v\n", lyrics)
 
-	findWords(lyrics, words)
+	//findWords(lyrics, words)
 }
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []Song) ([]Lyrics, error) {
-	client, err := New(os.Getenv("LYRICS"))
-	if err != nil {
-		return nil, err
-	}
-
 	// create error channel to receive errors from go routines
 	errCh := make(chan error)
 	resultCh := make(chan Lyrics)
@@ -79,11 +58,9 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 
 	for _, song := range songList {
 		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-		go doRequests(resultCh, errCh, &wg, client, song)
+		go doRequests(resultCh, errCh, &wg, song)
 	}
 
-	// need to place this into a go routine otherwise blocks here before values are pulled off
-	// without this we would hit a deadlock
 	go func() {
 		wg.Wait()
 		close(errCh)
@@ -105,12 +82,28 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 	return allLyrics, nil
 }
 
-func doRequests(resultCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, client CustomClient, song Song) {
-	defer wg.Done()
+func getLyricsOneSong(song Song) (*Lyrics, error) {
+	errCh := make(chan error)
+	resultCh := make(chan Lyrics)
+
+	go doRequests(resultCh, errCh, nil, song)
+
+	select {
+	case err := <-errCh:
+		return nil, err
+	case lyrics := <-resultCh:
+		return &lyrics, nil
+	}
+}
+
+func doRequests(resultCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, song Song) {
+	if wg != nil {
+		defer wg.Done()
+	}
 	var lyrics Lyrics
 	endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 
-	resp, err := makeRequest(client, endpoint)
+	resp, err := makeRequestLyrics(endpoint)
 	if err != nil {
 		errCh <- err
 		return
@@ -136,5 +129,4 @@ func doRequests(resultCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, 
 	}
 
 	resultCh <- lyrics
-
 }
