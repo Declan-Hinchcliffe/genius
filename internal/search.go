@@ -420,6 +420,7 @@ func GetOneSong(songs apiSearchResponse) (*Song, error) {
 	}
 
 	return &Song{
+		ID:     1,
 		Title:  song.Response.Song.Title,
 		Artist: song.Response.Song.PrimaryArtist.Name,
 	}, nil

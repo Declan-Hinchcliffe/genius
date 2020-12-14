@@ -9,12 +9,14 @@ import (
 
 // Song represents a Song returned from the API
 type Song struct {
+	ID     int    `json:"id"`
 	Title  string `json:"title"`
 	Artist string `json:"artist"`
 }
 
 // Lyrics represents the lyrics returned from the lyric api
 type Lyrics struct {
+	ID     int    `json:"id"`
 	Lyrics string `json:"lyrics"`
 }
 

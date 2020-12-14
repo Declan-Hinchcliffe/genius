@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -26,8 +27,8 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	for i, song := range songs {
-		fmt.Fprintf(w, "%v. %v - %v\n", i+1, song.Artist, song.Title)
+	if err := json.NewEncoder(w).Encode(songs); err != nil {
+		panic("failed to encode response")
 	}
 }
 
@@ -79,7 +80,9 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "%v - %v", song.Artist, song.Title)
+	fmt.Println(song)
+
+	fmt.Fprintf(w, "%v", song)
 
 }
 
@@ -102,5 +105,5 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "%v", lyrics)
+	json.NewEncoder(w).Encode(lyrics)
 }
