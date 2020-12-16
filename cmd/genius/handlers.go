@@ -44,7 +44,9 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "\n%v\n", lyrics)
+	if err := json.NewEncoder(w).Encode(lyrics); err != nil {
+		panic(err)
+	}
 
 	internal.FindWords(w, lyrics, &words)
 }

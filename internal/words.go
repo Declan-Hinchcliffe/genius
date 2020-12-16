@@ -1,14 +1,13 @@
 package internal
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 )
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func FindWords(w http.ResponseWriter, allLyrics []Lyrics, flag *string) {
+func FindWords(w http.ResponseWriter, allLyrics []Lyrics, flag *string) (map[string]int, error) {
 	wordsFlag := strings.Fields(*flag)
 	wordCounter := make([]int, len(wordsFlag))
 	var numOfWords int
@@ -24,15 +23,13 @@ func FindWords(w http.ResponseWriter, allLyrics []Lyrics, flag *string) {
 		}
 	}
 
-	fmt.Fprintf(w, "total words counted: %v\n", numOfWords)
-
 	wordMap := make(map[string]int)
+
+	wordMap["numOfWords"] = numOfWords
 
 	for i, v := range wordsFlag {
 		wordMap[v] = wordCounter[i]
 	}
 
-	for i, v := range wordsFlag {
-		fmt.Fprintf(w, "'%v' total: %v\n", v, wordCounter[i])
-	}
+	return wordMap, nil
 }
