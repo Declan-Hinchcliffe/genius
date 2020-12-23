@@ -1,19 +1,20 @@
 package internal
 
 import (
-	"net/http"
 	"strings"
+
+	"github.com/joe-bricknell/genius/internal/models"
 )
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func FindWords(w http.ResponseWriter, allLyrics []Lyrics, flag *string) (map[string]int, error) {
+func FindWords(songData *models.Response, flag *string) (map[string]int, error) {
 	wordsFlag := strings.Fields(*flag)
 	wordCounter := make([]int, len(wordsFlag))
 	var numOfWords int
 
-	for _, lyrics := range allLyrics {
-		for _, songWord := range strings.Fields(lyrics.Lyrics) {
+	for _, lyrics := range songData.Lyrics {
+		for _, songWord := range strings.Fields(lyrics.Lyric) {
 			numOfWords++
 			for i, lookupWord := range wordsFlag {
 				if lookupWord == songWord {

@@ -10,12 +10,12 @@ import (
 )
 
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
-func getLyrics(songList []models.Song) ([]models.Response, error) {
+func getLyrics(songList []models.Song) ([]models.Lyric, error) {
 	// create error channel to receive errors from go routines
 	errCh := make(chan error)
-	resultCh := make(chan models.Response)
+	resultCh := make(chan models.Lyric)
 
-	allLyrics := make([]models.Response, 0, 20)
+	allLyrics := make([]models.Lyric, 0, 20)
 
 	var wg sync.WaitGroup
 
@@ -46,9 +46,9 @@ func getLyrics(songList []models.Song) ([]models.Response, error) {
 }
 
 // GetLyricsOneSong will retrieve the lyrics for a given song
-func GetLyricsForSingleSong(song models.Song) (*models.Response, error) {
+func GetLyricsForSingleSong(song models.Song) (*models.Lyric, error) {
 	errCh := make(chan error)
-	resultCh := make(chan models.Response)
+	resultCh := make(chan models.Lyric)
 
 	go doRequests(resultCh, errCh, nil, song)
 
@@ -60,11 +60,12 @@ func GetLyricsForSingleSong(song models.Song) (*models.Response, error) {
 	}
 }
 
-func doRequests(resultCh chan<- models.Response, errCh chan<- error, wg *sync.WaitGroup, song models.Song) {
+func doRequests(resultCh chan<- models.Lyric, errCh chan<- error, wg *sync.WaitGroup, song models.Song) {
 	if wg != nil {
 		defer wg.Done()
 	}
-	var lyrics models.Response
+
+	var lyrics models.Lyric
 	endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 
 	resp, err := makeRequestLyrics(endpoint)
@@ -88,7 +89,7 @@ func doRequests(resultCh chan<- models.Response, errCh chan<- error, wg *sync.Wa
 		return
 	}
 
-	if lyrics.Lyrics == "" {
+	if lyrics.Lyric == "" {
 		fmt.Printf("failed to find lyrics for: %v - %v\n", song.Artist, song.Title)
 	}
 

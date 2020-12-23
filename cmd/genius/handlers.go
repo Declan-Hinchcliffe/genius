@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/joe-bricknell/genius/internal/models"
+
 	"github.com/gorilla/mux"
 	"github.com/joe-bricknell/genius/internal"
 )
@@ -35,20 +37,28 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 // GetLyricsByArtist will get the lyrics to the top 20 songs by a particular artist
 func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	words := "hello and the"
+	wordsInput := "hello and the"
 
-	var lyrics []internal
-	var err error
-	lyrics, err = internal.GetAllLyricsByArtist(vars["artist"])
+	songData, err := internal.GetAllLyricsByArtist(vars["artist"])
 	if err != nil {
-		panic(err)
+		http.Error(w, http.StatusText(400), 400)
 	}
 
-	if err := json.NewEncoder(w).Encode(lyrics); err != nil {
-		panic(err)
+	wordMap, err := internal.FindWords(songData, &wordsInput)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
 	}
 
-	internal.FindWords(w, lyrics, &words)
+	data := models.Response{
+		Status:  200,
+		Songs:   songData.Songs,
+		Lyrics:  songData.Lyrics,
+		WordMap: wordMap,
+	}
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 }
 
 // GetLyricsBySearch will get all the lyrics for the 20 results of a given search

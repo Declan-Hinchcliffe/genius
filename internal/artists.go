@@ -59,7 +59,7 @@ type geniusAllSongsResponse struct {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func GetAllLyricsByArtist(artist string) ([]Lyrics, error) {
+func GetAllLyricsByArtist(artist string) (*models.Response, error) {
 	id, err := GetArtistID(artist)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,12 @@ func GetAllLyricsByArtist(artist string) ([]Lyrics, error) {
 		return nil, err
 	}
 
-	return lyrics, nil
+	data := models.Response{
+		Songs:  songs,
+		Lyrics: lyrics,
+	}
+
+	return &data, nil
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
@@ -111,7 +116,7 @@ func GetArtistID(artist string) (*int, error) {
 }
 
 // songsByArtist will retrieve all the songs by an artist using the artist id
-func SongsByArtist(id int) (*models.Response, error) {
+func SongsByArtist(id int) ([]models.Song, error) {
 	endpoint := fmt.Sprintf("artists/%v/songs?sort=popularity", id)
 
 	resp, err := makeRequestGenius(endpoint)
@@ -136,12 +141,7 @@ func SongsByArtist(id int) (*models.Response, error) {
 		return nil, err
 	}
 
-	songData := models.Response{
-		Status: resp.StatusCode,
-		Songs:  songList,
-	}
-
-	return &songData, nil
+	return songList, nil
 }
 
 // getSongs will loop over a slice of Song data and retrieve the artist and title for each Song
