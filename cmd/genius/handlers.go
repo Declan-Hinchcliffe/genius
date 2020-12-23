@@ -10,7 +10,7 @@ import (
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "home page coming soon...")
+	json.NewEncoder(w).Encode("home page coming soon!")
 }
 
 // GetAllSongs will get the top 20 songs by a given artist
@@ -28,7 +28,7 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(songs); err != nil {
-		panic("failed to encode response")
+		http.Error(w, http.StatusText(400), 400)
 	}
 }
 
@@ -37,7 +37,7 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	words := "hello and the"
 
-	var lyrics []internal.Lyrics
+	var lyrics []internal
 	var err error
 	lyrics, err = internal.GetAllLyricsByArtist(vars["artist"])
 	if err != nil {

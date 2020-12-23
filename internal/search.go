@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"net/url"
 	"strings"
+
+	"github.com/joe-bricknell/genius/internal/models"
 )
 
 //need to define our Song struct
-type apiSearchResponse struct {
+type geniusApiResponse struct {
 	Response struct {
 		Hits []hit
 	} `json:"response"`
@@ -383,12 +385,12 @@ func SearchSongs(search string) (*apiSearchResponse, error) {
 	return &songsFullResponse, nil
 }
 
-func shortenSongResponse(resp apiSearchResponse) ([]Song, error) {
+func shortenSongResponse(resp apiSearchResponse) ([]models.Song, error) {
 	// define our Song list variable and range over the songs and add the
 	// Song name and artist to the Song struct
-	songList := make([]Song, 0, 20)
+	songList := make([]models.Song, 0, 20)
 	for _, songs := range resp.Response.Hits {
-		song := Song{
+		song := models.Song{
 			Title:  strings.TrimSpace(songs.Result.Title),
 			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
 		}
@@ -403,7 +405,7 @@ func shortenSongResponse(resp apiSearchResponse) ([]Song, error) {
 	return songList, nil
 }
 
-func GetOneSong(songs apiSearchResponse) (*Song, error) {
+func GetOneSong(songs apiSearchResponse) (*models.Song, error) {
 	var songID int
 
 	if songs.Response.Hits == nil {
@@ -419,7 +421,7 @@ func GetOneSong(songs apiSearchResponse) (*Song, error) {
 		return nil, err
 	}
 
-	return &Song{
+	return &models.Song{
 		ID:     1,
 		Title:  song.Response.Song.Title,
 		Artist: song.Response.Song.PrimaryArtist.Name,

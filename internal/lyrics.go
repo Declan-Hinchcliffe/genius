@@ -5,28 +5,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sync"
+
+	"github.com/joe-bricknell/genius/internal/models"
 )
 
-// Song represents a Song returned from the API
-type Song struct {
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Artist string `json:"artist"`
-}
-
-// Lyrics represents the lyrics returned from the lyric api
-type Lyrics struct {
-	ID     int    `json:"id"`
-	Lyrics string `json:"lyrics"`
-}
-
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
-func getLyrics(songList []Song) ([]Lyrics, error) {
+func getLyrics(songList []models.Song) ([]models.Response, error) {
 	// create error channel to receive errors from go routines
 	errCh := make(chan error)
-	resultCh := make(chan Lyrics)
+	resultCh := make(chan models.Response)
 
-	allLyrics := make([]Lyrics, 0, 20)
+	allLyrics := make([]models.Response, 0, 20)
 
 	var wg sync.WaitGroup
 
@@ -57,9 +46,9 @@ func getLyrics(songList []Song) ([]Lyrics, error) {
 }
 
 // GetLyricsOneSong will retrieve the lyrics for a given song
-func GetLyricsForSingleSong(song Song) (*Lyrics, error) {
+func GetLyricsForSingleSong(song models.Song) (*models.Response, error) {
 	errCh := make(chan error)
-	resultCh := make(chan Lyrics)
+	resultCh := make(chan models.Response)
 
 	go doRequests(resultCh, errCh, nil, song)
 
@@ -71,11 +60,11 @@ func GetLyricsForSingleSong(song Song) (*Lyrics, error) {
 	}
 }
 
-func doRequests(resultCh chan<- Lyrics, errCh chan<- error, wg *sync.WaitGroup, song Song) {
+func doRequests(resultCh chan<- models.Response, errCh chan<- error, wg *sync.WaitGroup, song models.Song) {
 	if wg != nil {
 		defer wg.Done()
 	}
-	var lyrics Lyrics
+	var lyrics models.Response
 	endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 
 	resp, err := makeRequestLyrics(endpoint)

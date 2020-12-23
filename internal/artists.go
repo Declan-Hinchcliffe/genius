@@ -8,12 +8,14 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/joe-bricknell/genius/internal/models"
 )
 
 var stripRegex = regexp.MustCompile("[^a-zA-Z0-9.'$]+")
 
 // allSongs represents the data structure of the response from the genius api
-type allSongsResponse struct {
+type geniusAllSongsResponse struct {
 	Meta struct {
 		Status int `json:"status"`
 	} `json:"meta"`
@@ -92,7 +94,7 @@ func GetArtistID(artist string) (*int, error) {
 		return nil, err
 	}
 
-	var songResponse apiSearchResponse
+	var songResponse geniusApiResponse
 	if err := json.Unmarshal(body, &songResponse); err != nil {
 		return nil, err
 	}
@@ -100,6 +102,7 @@ func GetArtistID(artist string) (*int, error) {
 	if len(songResponse.Response.Hits) == 0 {
 		return nil, errors.New("couldn't find id for given artist")
 	}
+
 	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
 
 	fmt.Printf("successfully retrieved id for %v - %v\n", artist, id)
@@ -108,13 +111,14 @@ func GetArtistID(artist string) (*int, error) {
 }
 
 // songsByArtist will retrieve all the songs by an artist using the artist id
-func SongsByArtist(id int) ([]Song, error) {
+func SongsByArtist(id int) (*models.Response, error) {
 	endpoint := fmt.Sprintf("artists/%v/songs?sort=popularity", id)
 
 	resp, err := makeRequestGenius(endpoint)
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -122,24 +126,29 @@ func SongsByArtist(id int) ([]Song, error) {
 		return nil, err
 	}
 
-	var apiSongs allSongsResponse
-	if err := json.Unmarshal(body, &apiSongs); err != nil {
+	var allSongs geniusAllSongsResponse
+	if err := json.Unmarshal(body, &allSongs); err != nil {
 		return nil, err
 	}
 
-	songList, err := getSongsForArtist(apiSongs)
+	songList, err := getSongsForArtist(allSongs)
 	if err != nil {
 		return nil, err
 	}
 
-	return songList, nil
+	songData := models.Response{
+		Status: resp.StatusCode,
+		Songs:  songList,
+	}
+
+	return &songData, nil
 }
 
 // getSongs will loop over a slice of Song data and retrieve the artist and title for each Song
-func getSongsForArtist(apiSongs allSongsResponse) ([]Song, error) {
-	var songList []Song
-	for i, songs := range apiSongs.Response.Songs {
-		song := Song{
+func getSongsForArtist(allSongs geniusAllSongsResponse) ([]models.Song, error) {
+	var songList []models.Song
+	for i, songs := range allSongs.Response.Songs {
+		song := models.Song{
 			ID:     i,
 			Title:  strings.TrimSpace(stripRegex.ReplaceAllString(songs.Title, " ")),
 			Artist: strings.TrimSpace(songs.PrimaryArtist.Name),
