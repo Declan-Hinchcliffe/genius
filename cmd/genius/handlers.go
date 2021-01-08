@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/joe-bricknell/genius/internal/models"
@@ -44,16 +43,21 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(400), 400)
 	}
 
-	wordMap, err := internal.FindWords(songData, &wordsInput)
-	if err != nil {
-		http.Error(w, http.StatusText(400), 400)
-	}
+	var wordMap map[string]int
+	var data models.Response
 
-	data := models.Response{
-		Status:  200,
-		Songs:   songData.Songs,
-		Lyrics:  songData.Lyrics,
-		WordMap: wordMap,
+	if songData != nil {
+		wordMap, err = internal.FindWords(songData.Lyrics, &wordsInput)
+		if err != nil {
+			http.Error(w, http.StatusText(400), 400)
+		}
+
+		data = models.Response{
+			Status:  200,
+			Songs:   songData.Songs,
+			Lyrics:  songData.Lyrics,
+			WordMap: wordMap,
+		}
 	}
 
 	if err := json.NewEncoder(w).Encode(data); err != nil {
@@ -68,14 +72,14 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	var lyrics []internal.Lyrics
-	var err error
-	lyrics, err = internal.GetLyricsBySearch(vars["search"])
+	songData, err := internal.GetLyricsBySearch(vars["search"])
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "\n%v\n", lyrics)
+	if err := json.NewEncoder(w).Encode(songData); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 }
 
 // GetOneSongBySearch will return the closest match to a given song from a
@@ -92,9 +96,9 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Println(song)
-
-	fmt.Fprintf(w, "%v", song)
+	if err := json.NewEncoder(w).Encode(song); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 
 }
 
@@ -117,5 +121,11 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	json.NewEncoder(w).Encode(lyrics)
+	data := models.Response{
+		Songs:   []models.Song{*song},
+		Lyrics:  []models.Lyric{*lyrics},
+		WordMap: nil,
+	}
+
+	json.NewEncoder(w).Encode(data)
 }

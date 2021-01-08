@@ -12,7 +12,7 @@ import (
 	"github.com/joe-bricknell/genius/internal/models"
 )
 
-var stripRegex = regexp.MustCompile("[^a-zA-Z0-9.'$]+")
+var stripRegex = regexp.MustCompile("^[a-zA-Z0-9'.]+$")
 
 // allSongs represents the data structure of the response from the genius api
 type geniusAllSongsResponse struct {

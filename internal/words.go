@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"bufio"
+	"fmt"
 	"strings"
 
 	"github.com/joe-bricknell/genius/internal/models"
@@ -8,12 +10,12 @@ import (
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func FindWords(songData *models.Response, flag *string) (map[string]int, error) {
+func FindWords(allLyrics []models.Lyric, flag *string) (map[string]int, error) {
 	wordsFlag := strings.Fields(*flag)
 	wordCounter := make([]int, len(wordsFlag))
 	var numOfWords int
 
-	for _, lyrics := range songData.Lyrics {
+	for _, lyrics := range allLyrics {
 		for _, songWord := range strings.Fields(lyrics.Lyric) {
 			numOfWords++
 			for i, lookupWord := range wordsFlag {
@@ -30,6 +32,46 @@ func FindWords(songData *models.Response, flag *string) (map[string]int, error) 
 
 	for i, v := range wordsFlag {
 		wordMap[v] = wordCounter[i]
+	}
+
+	return wordMap, nil
+}
+
+func scanWords(lyrics []models.Lyric, flag *string) (map[string]int, error) {
+	wordsList := strings.Fields(*flag)
+	wordCount := make([]int, len(wordsList))
+	wordMap := make(map[string]int)
+
+	numOfWords := 0
+	var words []string
+
+	for _, v := range lyrics {
+		scan := bufio.NewScanner(strings.NewReader(v.Lyric))
+		scan.Split(bufio.ScanWords)
+
+		for scan.Scan() {
+			numOfWords++
+			words = append(words, scan.Text())
+		}
+		if err := scan.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	fmt.Println(words)
+
+	for _, songWord := range words {
+		for i, lookUpWord := range wordsList {
+			if lookUpWord == songWord {
+				wordCount[i]++
+			}
+		}
+	}
+
+	wordMap["numOfWords"] = numOfWords
+
+	for i, v := range wordsList {
+		wordMap[v] = wordCount[i]
 	}
 
 	return wordMap, nil

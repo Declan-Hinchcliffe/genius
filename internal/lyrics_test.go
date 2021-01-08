@@ -1,70 +1,56 @@
 package internal
 
-//
-//import (
-//	"fmt"
-//	"testing"
-//
-//	"github.com/stretchr/testify/assert"
-//)
-//
-//// can't fix this test says no lyrics are returned
-//func TestGetLyrics(t *testing.T) {
-//	testCases := []struct {
-//		desc           string
-//		songs          []Song
-//		expectedLyrics []Lyrics
-//	}{
-//		{
-//			desc: "1. response returns lyrics",
-//			songs: []Song{
-//				{
-//					Title:  "God's Plan",
-//					Artist: "Drake",
-//				},
-//			},
-//		},
-//		//{
-//		//	desc: "2. response returns empty lyrics as api can't find song",
-//		//	songs: []Song{
-//		//		{
-//		//			Title:  "m.A.A.d city",
-//		//			Artist: "Kendrick Lamar",
-//		//		},
-//		//	},
-//		//	expectedLyrics: []Lyrics{{Lyrics: ""}},
-//		//},
-//	}
-//
-//	for _, tc := range testCases {
-//		loadEnv()
-//		lyrics, err := getLyrics(tc.songs)
-//		if err != nil {
-//			t.Fatalf("error when calling getLyrics. err: %v", err)
-//		}
-//
-//		if tc.expectedLyrics != nil {
-//			assert.Equal(t, tc.expectedLyrics, lyrics)
-//		} else {
-//			assert.NotEmpty(t, lyrics[0].Lyrics)
-//		}
-//
-//	}
-//}
-//
-//func TestFindWords(t *testing.T) {
-//	expectedWords := map[string]int{
-//		"fuckCount":  12,
-//		"shitCount":  6,
-//		"bitchCount": 13,
-//		"pussyCount": 21,
-//	}
-//
-//	wordMap := findWords(testLyrics, nil)
-//	assert.Equal(t, wordMap, expectedWords)
-//	fmt.Println(wordMap)
-//}
-//
+import (
+	"testing"
+
+	"github.com/joe-bricknell/genius/internal/models"
+
+	"github.com/stretchr/testify/assert"
+)
+
+// can't fix this test says no lyrics are returned
+func TestGetLyrics(t *testing.T) {
+	testCases := []struct {
+		desc           string
+		songs          []models.Song
+		expectedLyrics []models.Lyric
+	}{
+		{
+			desc: "1. response returns lyrics",
+			songs: []models.Song{
+				{
+					Title:  "God's Plan",
+					Artist: "Drake",
+				},
+			},
+		},
+		{
+			desc: "2. response returns empty lyrics as api can't find song",
+			songs: []models.Song{
+				{
+					Title:  "m.A.A.d city",
+					Artist: "Kendrick Lamar",
+				},
+			},
+			expectedLyrics: []models.Lyric{{Lyric: ""}},
+		},
+	}
+
+	for _, tc := range testCases {
+		lyrics, err := getLyrics(tc.songs)
+		if err != nil {
+			t.Fatalf("error when calling getLyrics. err: %v", err)
+		}
+
+		if tc.expectedLyrics != nil {
+			assert.Equal(t, tc.expectedLyrics, lyrics)
+		} else {
+			assert.NotEmpty(t, lyrics[0].Lyric)
+		}
+
+	}
+}
+
 //func BenchmarkGetLyrics(b *testing.B) {
 //	for i := 0; i < b.N; i++ {
 //		got, _ := getLyrics(testSongs)

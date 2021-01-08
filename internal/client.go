@@ -12,11 +12,26 @@ const (
 	apiKey    = "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
 )
 
-var netClient = http.Client{
+var client = &http.Client{
 	Timeout: time.Second * 10,
 }
 
+type CustomClient struct {
+	httpClient *http.Client
+	url        string
+}
+
+// New creates a new custom client
+func New(url string) (CustomClient, error) {
+	return CustomClient{
+		httpClient: client,
+		url:        url,
+	}, nil
+}
+
 func makeRequestGenius(endpoint string) (*http.Response, error) {
+	c, err := New("https://api.genius.com")
+
 	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", geniusURL, endpoint), nil)
 	if err != nil {
 		return nil, err
@@ -24,7 +39,7 @@ func makeRequestGenius(endpoint string) (*http.Response, error) {
 
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	resp, err := netClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -33,14 +48,14 @@ func makeRequestGenius(endpoint string) (*http.Response, error) {
 }
 
 func makeRequestLyrics(endpoint string) (*http.Response, error) {
+	c, err := New("https://api.lyrics.ovh/v1")
 	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", lyricsURL, endpoint), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := netClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-
 		return nil, err
 	}
 

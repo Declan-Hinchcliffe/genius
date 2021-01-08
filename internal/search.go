@@ -58,7 +58,7 @@ type hit struct {
 	} `json:"result"`
 }
 
-type singleSongResponse struct {
+type geniusApiResponseOneSong struct {
 	Meta struct {
 		Status int `json:"status"`
 	} `json:"meta"`
@@ -333,7 +333,7 @@ type singleSongResponse struct {
 
 // GetLyricsBySearch will call to the genius api to get the songs and then call
 // to the lyrics api to get the lyrics
-func GetLyricsBySearch(flag string) ([]Lyrics, error) {
+func GetLyricsBySearch(flag string) (*models.Response, error) {
 	encodedSearch := url.QueryEscape(flag)
 
 	searchResp, err := SearchSongs(encodedSearch)
@@ -352,16 +352,17 @@ func GetLyricsBySearch(flag string) ([]Lyrics, error) {
 		return nil, err
 	}
 
-	return allLyrics, nil
+	return &models.Response{
+		Songs:  songList,
+		Lyrics: allLyrics,
+	}, nil
 
 }
 
 // searchSongs will call to the genius api and return a list of songs matching
 // a particular search
-func SearchSongs(search string) (*apiSearchResponse, error) {
+func SearchSongs(search string) (*geniusApiResponse, error) {
 	endpoint := fmt.Sprintf("search?q=%v", url.QueryEscape(search))
-
-	fmt.Println(endpoint)
 
 	resp, err := makeRequestGenius(endpoint)
 	if err != nil {
@@ -377,7 +378,8 @@ func SearchSongs(search string) (*apiSearchResponse, error) {
 	}
 
 	// unmarshal json into Song response struct
-	var songsFullResponse apiSearchResponse
+	var songsFullResponse geniusApiResponse
+
 	if err := json.Unmarshal(body, &songsFullResponse); err != nil {
 		return nil, err
 	}
@@ -385,13 +387,14 @@ func SearchSongs(search string) (*apiSearchResponse, error) {
 	return &songsFullResponse, nil
 }
 
-func shortenSongResponse(resp apiSearchResponse) ([]models.Song, error) {
+func shortenSongResponse(resp geniusApiResponse) ([]models.Song, error) {
 	// define our Song list variable and range over the songs and add the
 	// Song name and artist to the Song struct
 	songList := make([]models.Song, 0, 20)
 	for _, songs := range resp.Response.Hits {
 		song := models.Song{
-			Title:  strings.TrimSpace(songs.Result.Title),
+			ID:     songs.Result.ID,
+			Title:  strings.TrimSpace(songs.Result.FullTitle),
 			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
 		}
 
@@ -405,16 +408,14 @@ func shortenSongResponse(resp apiSearchResponse) ([]models.Song, error) {
 	return songList, nil
 }
 
-func GetOneSong(songs apiSearchResponse) (*models.Song, error) {
-	var songID int
-
-	if songs.Response.Hits == nil {
+func GetOneSong(songs geniusApiResponse) (*models.Song, error) {
+	if len(songs.Response.Hits) == 0 {
 		return nil, errors.New("could not find any songs for search")
 	}
 
-	songID = songs.Response.Hits[0].Result.ID
+	songID := songs.Response.Hits[0].Result.ID
 
-	fmt.Println(songID)
+	fmt.Printf("found id: %v for song: %v\n", songID, songs.Response.Hits[0].Result.FullTitle)
 
 	song, err := getSongFromID(songID)
 	if err != nil {
@@ -422,14 +423,14 @@ func GetOneSong(songs apiSearchResponse) (*models.Song, error) {
 	}
 
 	return &models.Song{
-		ID:     1,
+		ID:     0,
 		Title:  song.Response.Song.Title,
 		Artist: song.Response.Song.PrimaryArtist.Name,
 	}, nil
 
 }
 
-func getSongFromID(id int) (*singleSongResponse, error) {
+func getSongFromID(id int) (*geniusApiResponseOneSong, error) {
 	endpoint := fmt.Sprintf("songs/%v", id)
 	resp, err := makeRequestGenius(endpoint)
 	if err != nil {
@@ -441,7 +442,7 @@ func getSongFromID(id int) (*singleSongResponse, error) {
 		return nil, err
 	}
 
-	var song singleSongResponse
+	var song geniusApiResponseOneSong
 	if err := json.Unmarshal(body, &song); err != nil {
 		return nil, err
 	}
