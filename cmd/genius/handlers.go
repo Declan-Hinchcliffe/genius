@@ -1,15 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
+
+	"github.com/joe-bricknell/genius/internal/models"
 
 	"github.com/gorilla/mux"
 	"github.com/joe-bricknell/genius/internal"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "home page coming soon...")
+	json.NewEncoder(w).Encode("home page coming soon!")
 }
 
 // GetAllSongs will get the top 20 songs by a given artist
@@ -26,26 +28,41 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	for i, song := range songs {
-		fmt.Fprintf(w, "%v. %v - %v\n", i+1, song.Artist, song.Title)
+	if err := json.NewEncoder(w).Encode(songs); err != nil {
+		http.Error(w, http.StatusText(400), 400)
 	}
 }
 
 // GetLyricsByArtist will get the lyrics to the top 20 songs by a particular artist
 func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	words := "hello and the"
+	wordsInput := "hello and the"
 
-	var lyrics []internal.Lyrics
-	var err error
-	lyrics, err = internal.GetAllLyricsByArtist(vars["artist"])
+	songData, err := internal.GetAllLyricsByArtist(vars["artist"])
 	if err != nil {
-		panic(err)
+		http.Error(w, http.StatusText(400), 400)
 	}
 
-	fmt.Fprintf(w, "\n%v\n", lyrics)
+	var wordMap map[string]int
+	var data models.Response
 
-	internal.FindWords(w, lyrics, &words)
+	if songData != nil {
+		wordMap, err = internal.FindWords(songData.Lyrics, &wordsInput)
+		if err != nil {
+			http.Error(w, http.StatusText(400), 400)
+		}
+
+		data = models.Response{
+			Status:  200,
+			Songs:   songData.Songs,
+			Lyrics:  songData.Lyrics,
+			WordMap: wordMap,
+		}
+	}
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 }
 
 // GetLyricsBySearch will get all the lyrics for the 20 results of a given search
@@ -55,14 +72,14 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	var lyrics []internal.Lyrics
-	var err error
-	lyrics, err = internal.GetLyricsBySearch(vars["search"])
+	songData, err := internal.GetLyricsBySearch(vars["search"])
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "\n%v\n", lyrics)
+	if err := json.NewEncoder(w).Encode(songData); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 }
 
 // GetOneSongBySearch will return the closest match to a given song from a
@@ -79,7 +96,9 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "%v - %v", song.Artist, song.Title)
+	if err := json.NewEncoder(w).Encode(song); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 
 }
 
@@ -102,5 +121,11 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "%v", lyrics)
+	data := models.Response{
+		Songs:   []models.Song{*song},
+		Lyrics:  []models.Lyrics{*lyrics},
+		WordMap: nil,
+	}
+
+	json.NewEncoder(w).Encode(data)
 }

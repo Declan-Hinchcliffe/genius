@@ -3,43 +3,23 @@ package internal
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"time"
 )
 
-var client = &http.Client{
-	Timeout: time.Second * 10,
-}
-
-type CustomClient struct {
-	httpClient *http.Client
-	url        string
-}
-
-// New creates a new custom client
-func New(url string) (CustomClient, error) {
-	return CustomClient{
-		httpClient: client,
-		url:        url,
-	}, nil
-}
+const (
+	geniusURL = "https://api.genius.com"
+	lyricsURL = "https://api.lyrics.ovh/v1"
+	apiKey    = "SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp"
+)
 
 func makeRequestGenius(endpoint string) (*http.Response, error) {
-	c, err := New(os.Getenv("GENIUS"))
+	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", geniusURL, endpoint), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", c.url, endpoint), nil)
-	if err != nil {
-		return nil, err
-	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	fmt.Println(req.URL)
-
-	req.Header.Set("Authorization", "Bearer SWIZahaJ5gY3S8ZOAwLbTlpREdKOXMakvPPM_0vD5q1AXId4J4fGTDJ-VO-h0Ojp")
-
-	resp, err := c.httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -48,19 +28,13 @@ func makeRequestGenius(endpoint string) (*http.Response, error) {
 }
 
 func makeRequestLyrics(endpoint string) (*http.Response, error) {
-	c, err := New(os.Getenv("LYRICS"))
+	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", lyricsURL, endpoint), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%v/%v", c.url, endpoint), nil)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-
 		return nil, err
 	}
 
