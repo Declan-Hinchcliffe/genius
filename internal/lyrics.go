@@ -9,6 +9,10 @@ import (
 	"github.com/joe-bricknell/genius/internal/models"
 )
 
+type LyricsResponse struct {
+	Lyrics string `json:"lyrics"`
+}
+
 // getLyrics will call to the lyrics api and return the lyrics for a particular Song
 func getLyrics(songList []models.Song) ([]models.Lyrics, error) {
 	// create error channel to receive errors from go routines
@@ -65,7 +69,7 @@ func doRequests(resultCh chan<- models.Lyrics, errCh chan<- error, wg *sync.Wait
 		defer wg.Done()
 	}
 
-	var lyrics models.Lyrics
+	var lyricsResp LyricsResponse
 	endpoint := fmt.Sprintf("%v/%v", song.Artist, song.Title)
 
 	resp, err := makeRequestLyrics(endpoint)
@@ -84,13 +88,18 @@ func doRequests(resultCh chan<- models.Lyrics, errCh chan<- error, wg *sync.Wait
 	}
 
 	// unmarshal json into lyrics struct
-	if err := json.Unmarshal(body, &lyrics); err != nil {
+	if err := json.Unmarshal(body, &lyricsResp); err != nil {
 		errCh <- err
 		return
 	}
 
-	if lyrics.Lyrics == "" {
+	if lyricsResp.Lyrics == "" {
 		fmt.Printf("failed to find lyrics for: %v - %v\n", song.Artist, song.Title)
+	}
+
+	lyrics := models.Lyrics{
+		ID:     song.ID,
+		Lyrics: lyricsResp.Lyrics,
 	}
 
 	resultCh <- lyrics

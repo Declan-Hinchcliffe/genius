@@ -5,7 +5,6 @@ package models
 // a lyrics we've searched for, the status code
 // of the response and the word map that tells us the word count
 type Response struct {
-	Status  int            `json:"status"`
 	Songs   []Song         `json:"song"`
 	Lyrics  []Lyrics       `json:"lyrics"`
 	WordMap map[string]int `json:"word_map"`
@@ -19,5 +18,6 @@ type Song struct {
 }
 
 type Lyrics struct {
+	ID     int    `json:"id"`
 	Lyrics string `json:"lyrics"`
 }

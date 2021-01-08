@@ -53,7 +53,6 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data = models.Response{
-			Status:  200,
 			Songs:   songData.Songs,
 			Lyrics:  songData.Lyrics,
 			WordMap: wordMap,
