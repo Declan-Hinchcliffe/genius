@@ -7,7 +7,7 @@ package models
 type Response struct {
 	Status  int            `json:"status"`
 	Songs   []Song         `json:"song"`
-	Lyrics  []Lyric        `json:"lyrics"`
+	Lyrics  []Lyrics       `json:"lyrics"`
 	WordMap map[string]int `json:"word_map"`
 }
 
@@ -18,6 +18,6 @@ type Song struct {
 	Artist string `json:"artist"`
 }
 
-type Lyric struct {
-	Lyric string `json:"lyric"`
+type Lyrics struct {
+	Lyrics string `json:"lyrics"`
 }

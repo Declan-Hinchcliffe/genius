@@ -10,13 +10,13 @@ import (
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func FindWords(allLyrics []models.Lyric, flag *string) (map[string]int, error) {
+func FindWords(allLyrics []models.Lyrics, flag *string) (map[string]int, error) {
 	wordsFlag := strings.Fields(*flag)
 	wordCounter := make([]int, len(wordsFlag))
 	var numOfWords int
 
 	for _, lyrics := range allLyrics {
-		for _, songWord := range strings.Fields(lyrics.Lyric) {
+		for _, songWord := range strings.Fields(lyrics.Lyrics) {
 			numOfWords++
 			for i, lookupWord := range wordsFlag {
 				if lookupWord == songWord {
@@ -37,7 +37,7 @@ func FindWords(allLyrics []models.Lyric, flag *string) (map[string]int, error) {
 	return wordMap, nil
 }
 
-func scanWords(lyrics []models.Lyric, flag *string) (map[string]int, error) {
+func scanWords(lyrics []models.Lyrics, flag *string) (map[string]int, error) {
 	wordsList := strings.Fields(*flag)
 	wordCount := make([]int, len(wordsList))
 	wordMap := make(map[string]int)
@@ -46,7 +46,7 @@ func scanWords(lyrics []models.Lyric, flag *string) (map[string]int, error) {
 	var words []string
 
 	for _, v := range lyrics {
-		scan := bufio.NewScanner(strings.NewReader(v.Lyric))
+		scan := bufio.NewScanner(strings.NewReader(v.Lyrics))
 		scan.Split(bufio.ScanWords)
 
 		for scan.Scan() {

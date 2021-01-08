@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"regexp"
 	"strings"
 
 	"github.com/joe-bricknell/genius/internal/models"
 )
-
-var stripRegex = regexp.MustCompile("^[a-zA-Z0-9'.]+$")
 
 // allSongs represents the data structure of the response from the genius api
 type geniusAllSongsResponse struct {
@@ -150,7 +147,7 @@ func getSongsForArtist(allSongs geniusAllSongsResponse) ([]models.Song, error) {
 	for i, songs := range allSongs.Response.Songs {
 		song := models.Song{
 			ID:     i,
-			Title:  strings.TrimSpace(stripRegex.ReplaceAllString(songs.Title, " ")),
+			Title:  strings.TrimSpace(songs.Title),
 			Artist: strings.TrimSpace(songs.PrimaryArtist.Name),
 		}
 

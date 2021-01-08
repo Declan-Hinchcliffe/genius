@@ -123,7 +123,7 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 
 	data := models.Response{
 		Songs:   []models.Song{*song},
-		Lyrics:  []models.Lyric{*lyrics},
+		Lyrics:  []models.Lyrics{*lyrics},
 		WordMap: nil,
 	}
 
