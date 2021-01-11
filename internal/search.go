@@ -352,9 +352,10 @@ func GetLyricsBySearch(flag string) (*models.Response, error) {
 		return nil, err
 	}
 
+	_ = allLyrics
+
 	return &models.Response{
-		Songs:  songList,
-		Lyrics: allLyrics,
+		Songs: songList,
 	}, nil
 
 }

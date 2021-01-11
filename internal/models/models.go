@@ -6,7 +6,6 @@ package models
 // of the response and the word map that tells us the word count
 type Response struct {
 	Songs   []Song         `json:"song"`
-	Lyrics  []Lyrics       `json:"lyrics"`
 	WordMap map[string]int `json:"word_map"`
 }
 
@@ -15,9 +14,10 @@ type Song struct {
 	ID     int    `json:"id"`
 	Title  string `json:"title"`
 	Artist string `json:"artist"`
+	Lyrics Lyrics `json:"lyrics"`
 }
 
 type Lyrics struct {
-	ID     int    `json:"id"`
+	ID     int    `json:"-"`
 	Lyrics string `json:"lyrics"`
 }

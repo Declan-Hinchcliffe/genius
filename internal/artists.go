@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/joe-bricknell/genius/internal/models"
@@ -72,9 +73,27 @@ func GetAllLyricsByArtist(artist string) (*models.Response, error) {
 		return nil, err
 	}
 
+	sort.Slice(lyrics, func(i, j int) bool { return lyrics[i].ID < lyrics[j].ID })
+
+	var songsWithLyrics []models.Song
+
+	for _, song := range songs {
+		for _, lyric := range lyrics {
+			song = models.Song{
+				ID:     song.ID,
+				Title:  song.Title,
+				Artist: song.Artist,
+				Lyrics: models.Lyrics{
+					ID:     song.ID,
+					Lyrics: lyric.Lyrics,
+				},
+			}
+		}
+		songsWithLyrics = append(songsWithLyrics, song)
+	}
+
 	data := models.Response{
-		Songs:  songs,
-		Lyrics: lyrics,
+		Songs: songsWithLyrics,
 	}
 
 	return &data, nil
