@@ -10,13 +10,13 @@ import (
 
 // findWords will search through the lyrics and count the number of matches
 // for particular words
-func FindWords(allLyrics []models.Lyrics, flag *string) (map[string]int, error) {
+func FindWords(songData models.Response, flag *string) (map[string]int, error) {
 	wordsFlag := strings.Fields(*flag)
 	wordCounter := make([]int, len(wordsFlag))
 	var numOfWords int
 
-	for _, lyrics := range allLyrics {
-		for _, songWord := range strings.Fields(lyrics.Lyrics) {
+	for _, songs := range songData.Songs {
+		for _, songWord := range strings.Fields(songs.Lyrics.Lyrics) {
 			numOfWords++
 			for i, lookupWord := range wordsFlag {
 				if lookupWord == songWord {

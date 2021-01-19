@@ -46,18 +46,14 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	var wordMap map[string]int
 	var data models.Response
 
-	if songData != nil {
-		wordMap, err = internal.FindWords(songData.Lyrics, &wordsInput)
-		if err != nil {
-			http.Error(w, http.StatusText(400), 400)
-		}
+	wordMap, err = internal.FindWords(songData, &wordsInput)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 
-		data = models.Response{
-			Status:  200,
-			Songs:   songData.Songs,
-			Lyrics:  songData.Lyrics,
-			WordMap: wordMap,
-		}
+	data = models.Response{
+		Songs:   songData.Songs,
+		WordMap: wordMap,
 	}
 
 	if err := json.NewEncoder(w).Encode(data); err != nil {
@@ -121,9 +117,10 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	_ = lyrics
+
 	data := models.Response{
 		Songs:   []models.Song{*song},
-		Lyrics:  []models.Lyrics{*lyrics},
 		WordMap: nil,
 	}
 

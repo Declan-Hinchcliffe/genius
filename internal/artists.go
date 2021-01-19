@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/joe-bricknell/genius/internal/models"
@@ -56,28 +57,52 @@ type geniusAllSongsResponse struct {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func GetAllLyricsByArtist(artist string) (*models.Response, error) {
+func GetAllLyricsByArtist(artist string) (models.Response, error) {
 	id, err := GetArtistID(artist)
 	if err != nil {
-		return nil, err
+		return models.Response{}, err
 	}
 
 	songs, err := SongsByArtist(*id)
 	if err != nil {
-		return nil, err
+		return models.Response{}, err
 	}
 
 	lyrics, err := getLyrics(songs)
 	if err != nil {
-		return nil, err
+		return models.Response{}, err
+	}
+
+	sort.Slice(lyrics, func(i, j int) bool { return lyrics[i].ID < lyrics[j].ID })
+
+	var songsWithLyrics []models.Song
+
+	for i, song := range songs {
+
+		for i2, lyric := range lyrics {
+
+			if i == i2 {
+				song = models.Song{
+					ID:     song.ID,
+					Title:  song.Title,
+					Artist: song.Artist,
+					Lyrics: models.Lyrics{
+						Lyrics: lyric.Lyrics,
+					},
+				}
+			}
+
+		}
+
+		songsWithLyrics = append(songsWithLyrics, song)
+
 	}
 
 	data := models.Response{
-		Songs:  songs,
-		Lyrics: lyrics,
+		Songs: songsWithLyrics,
 	}
 
-	return &data, nil
+	return data, nil
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result
