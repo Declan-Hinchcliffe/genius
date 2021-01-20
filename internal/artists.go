@@ -56,6 +56,34 @@ type geniusAllSongsResponse struct {
 	} `json:"response"`
 }
 
+// GetLyricsOneSong will retrieve the lyrics for a given song
+func GetLyricsForSingleSong(song models.Song) (models.Lyrics, error) {
+	errCh := make(chan error)
+	resultCh := make(chan models.Lyrics)
+
+	go doRequests(resultCh, errCh, nil, song)
+
+	select {
+	case err := <-errCh:
+		return models.Lyrics{}, err
+	case lyrics := <-resultCh:
+		//data := models.Response{
+		//	Songs: []models.Song{
+		//		{
+		//			ID:     song.ID,
+		//			Title:  song.Title,
+		//			Artist: song.Artist,
+		//			Lyrics: models.Lyrics{
+		//				ID:     lyrics.ID,
+		//				Lyrics: lyrics.Lyrics,
+		//			},
+		//		},
+		//	},
+		//}
+		return lyrics, nil
+	}
+}
+
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
 func GetAllLyricsByArtist(artist string) (models.Response, error) {
 	id, err := GetArtistID(artist)
