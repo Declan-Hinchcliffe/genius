@@ -49,21 +49,6 @@ func getLyrics(songList []models.Song) ([]models.Lyrics, error) {
 	return allLyrics, nil
 }
 
-// GetLyricsOneSong will retrieve the lyrics for a given song
-func GetLyricsForSingleSong(song models.Song) (*models.Lyrics, error) {
-	errCh := make(chan error)
-	resultCh := make(chan models.Lyrics)
-
-	go doRequests(resultCh, errCh, nil, song)
-
-	select {
-	case err := <-errCh:
-		return nil, err
-	case lyrics := <-resultCh:
-		return &lyrics, nil
-	}
-}
-
 func doRequests(resultCh chan<- models.Lyrics, errCh chan<- error, wg *sync.WaitGroup, song models.Song) {
 	if wg != nil {
 		defer wg.Done()

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"sort"
 	"strings"
 
 	"github.com/joe-bricknell/genius/internal/models"
@@ -56,53 +55,54 @@ type geniusAllSongsResponse struct {
 	} `json:"response"`
 }
 
+// GetLyricsOneSong will retrieve the lyrics for a given song
+func GetLyricsForSingleSong(song models.Song) (models.Lyrics, error) {
+	errCh := make(chan error)
+	resultCh := make(chan models.Lyrics)
+
+	go doRequests(resultCh, errCh, nil, song)
+
+	select {
+	case err := <-errCh:
+		return models.Lyrics{}, err
+	case lyrics := <-resultCh:
+		//data := models.Response{
+		//	Songs: []models.Song{
+		//		{
+		//			ID:     song.ID,
+		//			Title:  song.Title,
+		//			Artist: song.Artist,
+		//			Lyrics: models.Lyrics{
+		//				ID:     lyrics.ID,
+		//				Lyrics: lyrics.Lyrics,
+		//			},
+		//		},
+		//	},
+		//}
+		return lyrics, nil
+	}
+}
+
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func GetAllLyricsByArtist(artist string) (models.Response, error) {
+func GetAllLyricsByArtist(artist string) ([]models.Song, error) {
 	id, err := GetArtistID(artist)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
 	songs, err := SongsByArtist(*id)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
 	lyrics, err := getLyrics(songs)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
-	sort.Slice(lyrics, func(i, j int) bool { return lyrics[i].ID < lyrics[j].ID })
+	songsWithLyrics := sortSongsAndLyrics(songs, lyrics)
 
-	var songsWithLyrics []models.Song
-
-	for i, song := range songs {
-
-		for i2, lyric := range lyrics {
-
-			if i == i2 {
-				song = models.Song{
-					ID:     song.ID,
-					Title:  song.Title,
-					Artist: song.Artist,
-					Lyrics: models.Lyrics{
-						Lyrics: lyric.Lyrics,
-					},
-				}
-			}
-
-		}
-
-		songsWithLyrics = append(songsWithLyrics, song)
-
-	}
-
-	data := models.Response{
-		Songs: songsWithLyrics,
-	}
-
-	return data, nil
+	return songsWithLyrics, nil
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result

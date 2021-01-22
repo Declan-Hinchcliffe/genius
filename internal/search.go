@@ -333,7 +333,7 @@ type geniusApiResponseOneSong struct {
 
 // GetLyricsBySearch will call to the genius api to get the songs and then call
 // to the lyrics api to get the lyrics
-func GetLyricsBySearch(flag string) (*models.Response, error) {
+func GetLyricsBySearch(flag string) ([]models.Song, error) {
 	encodedSearch := url.QueryEscape(flag)
 
 	searchResp, err := SearchSongs(encodedSearch)
@@ -352,12 +352,31 @@ func GetLyricsBySearch(flag string) (*models.Response, error) {
 		return nil, err
 	}
 
-	_ = allLyrics
+	songsWithLyrics := sortSongsAndLyrics(songList, allLyrics)
 
-	return &models.Response{
-		Songs: songList,
-	}, nil
+	return songsWithLyrics, nil
+}
 
+// shortenSongResponse takes our api response and pulls out the artist, song title and id
+func shortenSongResponse(resp geniusApiResponse) ([]models.Song, error) {
+	// define our Song list variable and range over the songs and add the
+	// Song name and artist to the Song struct
+	songList := make([]models.Song, 0, 20)
+	for _, songs := range resp.Response.Hits {
+		song := models.Song{
+			ID:     songs.Result.ID,
+			Title:  strings.TrimSpace(songs.Result.Title),
+			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
+		}
+
+		songList = append(songList, song)
+	}
+
+	for _, song := range songList {
+		fmt.Printf("%v - %v\n", song.Artist, song.Title)
+	}
+
+	return songList, nil
 }
 
 // searchSongs will call to the genius api and return a list of songs matching
@@ -386,27 +405,6 @@ func SearchSongs(search string) (*geniusApiResponse, error) {
 	}
 
 	return &songsFullResponse, nil
-}
-
-func shortenSongResponse(resp geniusApiResponse) ([]models.Song, error) {
-	// define our Song list variable and range over the songs and add the
-	// Song name and artist to the Song struct
-	songList := make([]models.Song, 0, 20)
-	for _, songs := range resp.Response.Hits {
-		song := models.Song{
-			ID:     songs.Result.ID,
-			Title:  strings.TrimSpace(songs.Result.FullTitle),
-			Artist: strings.TrimSpace(songs.Result.PrimaryArtist.Name),
-		}
-
-		songList = append(songList, song)
-	}
-
-	for _, song := range songList {
-		fmt.Printf("%v - %v\n", song.Artist, song.Title)
-	}
-
-	return songList, nil
 }
 
 func GetOneSong(songs geniusApiResponse) (*models.Song, error) {

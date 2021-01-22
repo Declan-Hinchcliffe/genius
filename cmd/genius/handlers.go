@@ -36,27 +36,25 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 // GetLyricsByArtist will get the lyrics to the top 20 songs by a particular artist
 func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	wordsInput := "hello and the"
 
 	songData, err := internal.GetAllLyricsByArtist(vars["artist"])
 	if err != nil {
 		http.Error(w, http.StatusText(400), 400)
 	}
 
-	var wordMap map[string]int
-	var data models.Response
+	//var wordMap map[string]int
+	//var data []models.Song
+	//wordsInput := "hello and the"
+	//
+	//wordMap, err = internal.FindWords(songData, &wordsInput)
+	//if err != nil {
+	//	http.Error(w, http.StatusText(400), 400)
+	//}
 
-	wordMap, err = internal.FindWords(songData, &wordsInput)
-	if err != nil {
-		http.Error(w, http.StatusText(400), 400)
-	}
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	data = models.Response{
-		Songs:   songData.Songs,
-		WordMap: wordMap,
-	}
-
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+	if err := json.NewEncoder(w).Encode(songData); err != nil {
 		http.Error(w, http.StatusText(400), 400)
 	}
 }
@@ -107,22 +105,39 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	song, err := internal.GetOneSong(*songs)
+	singleSong, err := internal.GetOneSong(*songs)
 	if err != nil {
 		panic(err)
 	}
 
-	lyrics, err := internal.GetLyricsForSingleSong(*song)
+	songWithLyrics, err := internal.GetLyricsForSingleSong(*singleSong)
 	if err != nil {
 		panic(err)
 	}
 
-	_ = lyrics
+	//wordsInput := "hello and the"
+	//
+	//wordMap, err := internal.FindWords(data, &wordsInput)
+	//if err != nil {
+	//	http.Error(w, http.StatusText(400), 400)
+	//}
 
-	data := models.Response{
-		Songs:   []models.Song{*song},
-		WordMap: nil,
+	//_ = wordMap
+
+	data := models.Song{
+		ID:     singleSong.ID,
+		Title:  singleSong.Title,
+		Artist: singleSong.Artist,
+		Lyrics: models.Lyrics{
+			ID:     songWithLyrics.ID,
+			Lyrics: songWithLyrics.Lyrics,
+		},
 	}
 
-	json.NewEncoder(w).Encode(data)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
 }
