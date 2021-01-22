@@ -7,6 +7,7 @@ import {
 import Footer from './Components/Footer';
 import Header from './Components/Header';
 import Songs from './views/Songs'
+import Home from './views/Home';
 
 
 function App() {
@@ -15,9 +16,24 @@ function App() {
       <Router>
         <Header/>
 
-        <Route path="/songs/lyrics/:name">
-          <Songs />
-        </Route>
+          <Route path="/">
+            <Home/>
+          </Route>
+
+          <Switch>
+            <Route path="/songs/lyrics/:name">
+              <Songs />
+            </Route>
+
+            <Route path="/songs/lyrics/:name">
+        
+            </Route>
+
+            <Route path="/songs/lyrics/:name">
+            
+            </Route>
+
+          </Switch>
         
         <Footer/>
       </Router>
