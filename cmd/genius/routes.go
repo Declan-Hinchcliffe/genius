@@ -14,7 +14,7 @@ func NewRouter() *mux.Router {
 
 	// looking for one song or one song lyrics
 	router.HandleFunc("/lyrics/{song}", GetLyricsOneSong).Methods("GET")
-	router.HandleFunc("/lyrics/{search}", GetLyricsBySearch).Methods("GET")
+	router.HandleFunc("/search/lyrics/{search}", GetLyricsBySearch).Methods("GET")
 
 	// looking via search
 	router.HandleFunc("/search/{song}", GetOneSongBySearch).Methods("GET")

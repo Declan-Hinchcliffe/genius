@@ -9,10 +9,6 @@ type Response struct {
 	//WordMap map[string]int
 }
 
-type SongsList struct {
-	Songs []Song `json:"song"`
-}
-
 // Song represents a Song returned from the API
 type Song struct {
 	ID     int    `json:"id"`
