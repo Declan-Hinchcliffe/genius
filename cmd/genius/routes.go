@@ -9,15 +9,15 @@ func NewRouter() *mux.Router {
 	router.HandleFunc("/home", homeHandler)
 
 	// looking for songs/lyrics by artist
-	router.HandleFunc("/songs/{search}", GetAllSongs).Methods("GET")
-	router.HandleFunc("/songs/lyrics/{artist}", GetLyricsByArtist).Methods("GET")
+	router.HandleFunc("/songs/search", GetAllSongs).Methods("GET", "POST")
+	router.HandleFunc("/songs/lyrics/artist", GetLyricsByArtist).Methods("GET", "POST")
 
 	// looking for one song or one song lyrics
-	router.HandleFunc("/lyrics/{song}", GetLyricsOneSong).Methods("GET")
-	router.HandleFunc("/search/lyrics/{search}", GetLyricsBySearch).Methods("GET")
+	router.HandleFunc("/song/lyrics", GetLyricsOneSong).Methods("GET", "POST")
+	router.HandleFunc("/search/lyrics/", GetLyricsBySearch).Methods("GET", "POST")
 
 	// looking via search
-	router.HandleFunc("/search/{song}", GetOneSongBySearch).Methods("GET")
+	router.HandleFunc("/search/song", GetOneSongBySearch).Methods("GET", "POST")
 
 	return router
 }

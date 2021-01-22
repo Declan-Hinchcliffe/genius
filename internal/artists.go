@@ -66,19 +66,6 @@ func GetLyricsForSingleSong(song models.Song) (models.Lyrics, error) {
 	case err := <-errCh:
 		return models.Lyrics{}, err
 	case lyrics := <-resultCh:
-		//data := models.Response{
-		//	Songs: []models.Song{
-		//		{
-		//			ID:     song.ID,
-		//			Title:  song.Title,
-		//			Artist: song.Artist,
-		//			Lyrics: models.Lyrics{
-		//				ID:     lyrics.ID,
-		//				Lyrics: lyrics.Lyrics,
-		//			},
-		//		},
-		//	},
-		//}
 		return lyrics, nil
 	}
 }
