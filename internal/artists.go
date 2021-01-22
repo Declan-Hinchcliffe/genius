@@ -85,20 +85,20 @@ func GetLyricsForSingleSong(song models.Song) (models.Lyrics, error) {
 }
 
 // getAllLyricsByArtist will return the lyrics to the first 20 songs by a given artist
-func GetAllLyricsByArtist(artist string) (models.Response, error) {
+func GetAllLyricsByArtist(artist string) ([]models.Song, error) {
 	id, err := GetArtistID(artist)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
 	songs, err := SongsByArtist(*id)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
 	lyrics, err := getLyrics(songs)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
 	sort.Slice(lyrics, func(i, j int) bool { return lyrics[i].ID < lyrics[j].ID })
@@ -126,11 +126,7 @@ func GetAllLyricsByArtist(artist string) (models.Response, error) {
 
 	}
 
-	data := models.Response{
-		Songs: songsWithLyrics,
-	}
-
-	return data, nil
+	return songsWithLyrics, nil
 }
 
 // getArtistID will call to the genius api search and pull out the artist id from the first search result

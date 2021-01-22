@@ -1,25 +1,41 @@
 import React, { useState, useEffect } from 'react'
 import Axios from 'axios'
+import { useParams } from 'react-router-dom'
+import SongCard from '../Components/SongCard'
 
 function Songs() {
-    const url = 'http://localhost:9000/lyrics/black'
-    const [song, setSong] = useState(null)
+    const { name } = useParams()
+    const url = `http://localhost:9000/songs/lyrics/${name}`
+    const [songs, setSongs] = useState(null)
+
+
+    let content = null
 
     useEffect(() => {
         Axios.get(url)
         .then(response => {
-            setSong(response.data)
+            setSongs(response.data)
+        })
+        .catch(() => {
+            
         })
     }, [url])
 
-    console.log(song)
+    console.log(songs)
 
-    if (song) {
+    if (songs) {
+        content = 
+        songs.map((song, key) => 
+            <div>
+                <SongCard
+                    song={song}
+                />
+            </div>
+        )
+
         return (
             <div>
-                <h1> {song.title} </h1>
-                <p> {song.artist} </p>
-                <p> {song.lyrics.lyrics} </p>
+               { content }
             </div>
         )
     }
@@ -27,7 +43,7 @@ function Songs() {
 
     return (
         <div>
-
+            
         </div>
     )
 }

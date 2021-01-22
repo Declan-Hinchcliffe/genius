@@ -36,30 +36,25 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 // GetLyricsByArtist will get the lyrics to the top 20 songs by a particular artist
 func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	wordsInput := "hello and the"
 
 	songData, err := internal.GetAllLyricsByArtist(vars["artist"])
 	if err != nil {
 		http.Error(w, http.StatusText(400), 400)
 	}
 
-	var wordMap map[string]int
-	var data models.Response
-
-	wordMap, err = internal.FindWords(songData, &wordsInput)
-	if err != nil {
-		http.Error(w, http.StatusText(400), 400)
-	}
-
-	data = models.Response{
-		Songs:   songData.Songs,
-		WordMap: wordMap,
-	}
+	//var wordMap map[string]int
+	//var data []models.Song
+	//wordsInput := "hello and the"
+	//
+	//wordMap, err = internal.FindWords(songData, &wordsInput)
+	//if err != nil {
+	//	http.Error(w, http.StatusText(400), 400)
+	//}
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+	if err := json.NewEncoder(w).Encode(songData); err != nil {
 		http.Error(w, http.StatusText(400), 400)
 	}
 }

@@ -5,8 +5,12 @@ package models
 // a lyrics we've searched for, the status code
 // of the response and the word map that tells us the word count
 type Response struct {
-	Songs   []Song         `json:"song"`
-	WordMap map[string]int `json:"word_map"`
+	Songs []Song
+	//WordMap map[string]int
+}
+
+type SongsList struct {
+	Songs []Song `json:"song"`
 }
 
 // Song represents a Song returned from the API
