@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"strings"
 
@@ -105,6 +106,8 @@ func GetArtistID(artist string) (*int, error) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err := fmt.Errorf("error when reading response body: %w", err)
+
 		return nil, err
 	}
 
@@ -119,7 +122,7 @@ func GetArtistID(artist string) (*int, error) {
 
 	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
 
-	fmt.Printf("successfully retrieved id for %v - %v\n", artist, id)
+	log.Printf("successfully retrieved id for %v - %v\n", artist, id)
 
 	return &id, nil
 }
