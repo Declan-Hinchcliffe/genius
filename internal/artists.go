@@ -2,13 +2,12 @@ package internal
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"strings"
 
+	"github.com/joe-bricknell/genius/internal/log"
 	"github.com/joe-bricknell/genius/internal/models"
 )
 
@@ -107,6 +106,7 @@ func GetArtistID(artist string) (*int, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		err := fmt.Errorf("error when reading response body: %w", err)
+		log.Logger.Infof("GetArtistID failed: %v", err)
 
 		return nil, err
 	}
@@ -117,12 +117,15 @@ func GetArtistID(artist string) (*int, error) {
 	}
 
 	if len(songResponse.Response.Hits) == 0 {
-		return nil, errors.New("couldn't find id for given artist")
+		err := fmt.Errorf("no artist id found for artist")
+		log.Logger.Infof("GetArtistID failed: %v", err)
+
+		return nil, err
 	}
 
 	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
 
-	log.Printf("successfully retrieved id for %v - %v\n", artist, id)
+	log.Logger.Infof("successfully retrieved id for %v - %v\n", artist, id)
 
 	return &id, nil
 }
@@ -140,11 +143,15 @@ func SongsByArtist(id int) ([]models.Song, error) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err := fmt.Errorf("failed to read response body: %w", err)
+		log.Logger.Errorf("SongsByArtist failed: %v", err)
 		return nil, err
 	}
 
 	var allSongs geniusAllSongsResponse
 	if err := json.Unmarshal(body, &allSongs); err != nil {
+		err := fmt.Errorf("failed to unmarshal response body: %w", err)
+		log.Logger.Errorf("SongsByArtist failed: %v", err)
 		return nil, err
 	}
 
