@@ -8,7 +8,7 @@ function Home() {
  
    useEffect(() => {
         axios.interceptors.request.use(request => {
-            console.log(JSON.stringify(request))
+            console.log(JSON.stringify(request.data))
             return request
         })
 

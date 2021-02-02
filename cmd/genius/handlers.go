@@ -97,7 +97,12 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 
 	log.Logger.Infof("finished scanning words: %v", wordMap)
 
-	if err := json.NewEncoder(w).Encode(songData); err != nil {
+	response := models.Response{
+		Songs:   songData,
+		WordMap: wordMap,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)
 		log.Logger.Errorf("GetLyricsByArtist failed: %v", err)
 
@@ -141,9 +146,14 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(400), 400)
 	}
 
-	log.Logger.Infof("finished scanning words: %v", wordMap)
+	log.Logger.Infof("finished scanning words... %v", wordMap)
 
-	if err := json.NewEncoder(w).Encode(songData); err != nil {
+	response := models.Response{
+		Songs:   songData,
+		WordMap: wordMap,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)
 		log.Logger.Errorf("GetLyricsBySearch failed: %v", err)
 
@@ -256,7 +266,7 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.Song{
+	songData := models.Song{
 		ID:     singleSong.ID,
 		Title:  singleSong.Title,
 		Artist: singleSong.Artist,
@@ -266,14 +276,19 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	wordMap, err := internal.ScanWords([]models.Song{data}, &test.Words)
+	wordMap, err := internal.ScanWords([]models.Song{songData}, &test.Words)
 	if err != nil {
 		http.Error(w, http.StatusText(400), 400)
 	}
 
 	log.Logger.Infof("finished scanning words: %v", wordMap)
 
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+	response := models.Response{
+		Songs:   []models.Song{songData},
+		WordMap: wordMap,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)
 		log.Logger.Errorf("GetLyricsOneSong failed: %v", err)
 
