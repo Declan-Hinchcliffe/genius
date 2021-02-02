@@ -15,7 +15,10 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/mattn/go-shellwords v1.0.10 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/rs/cors v1.7.0
 	github.com/stretchr/testify v1.6.1
+	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.16.0
 	golang.org/x/sync v0.0.0-20200930132711-30421366ff76 // indirect
 	golang.org/x/sys v0.0.0-20201214095126-aec9a390925b // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect

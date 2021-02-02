@@ -1,5 +1,5 @@
 start:
-	reflex -d none -r '(\.go$|go\.mod)' -s -- go run ./cmd/genius/
+	cd /Users/jbr01/code/projects/genius/internal && reflex -d none -r '(\.go$|go\.mod)' -s -- go run ../cmd/genius/
 
 stop:
 	docker-compose down --remove-orphans

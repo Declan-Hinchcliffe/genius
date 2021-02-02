@@ -5,19 +5,20 @@ import (
 )
 
 func NewRouter() *mux.Router {
-	router := mux.NewRouter()
-	router.HandleFunc("/home", homeHandler)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/home", homeHandler)
 
 	// looking for songs/lyrics by artist
-	router.HandleFunc("/songs/{search}", GetAllSongs).Methods("GET")
-	router.HandleFunc("/songs/lyrics/{artist}", GetLyricsByArtist).Methods("GET")
+	r.HandleFunc("/songs/search", GetAllSongs)
+	r.HandleFunc("/songs/lyrics/artist", GetLyricsByArtist)
 
 	// looking for one song or one song lyrics
-	router.HandleFunc("/lyrics/{song}", GetLyricsOneSong).Methods("GET")
-	router.HandleFunc("/search/lyrics/{search}", GetLyricsBySearch).Methods("GET")
+	r.HandleFunc("/song/lyrics", GetLyricsOneSong)
+	r.HandleFunc("/search/lyrics/", GetLyricsBySearch)
 
 	// looking via search
-	router.HandleFunc("/search/{song}", GetOneSongBySearch).Methods("GET")
+	r.HandleFunc("/search/song", GetOneSongBySearch)
 
-	return router
+	return r
 }

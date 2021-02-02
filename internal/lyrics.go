@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/joe-bricknell/genius/internal/log"
+
 	"github.com/joe-bricknell/genius/internal/models"
 )
 
@@ -25,8 +27,9 @@ func getLyrics(songList []models.Song) ([]models.Lyrics, error) {
 
 	wg.Add(len(songList))
 
+	log.Logger.Info("looking for lyrics for...")
 	for _, song := range songList {
-		fmt.Printf("%v - %v\n", song.Artist, song.Title)
+		log.Logger.Infof("%v - %v", song.Artist, song.Title)
 		go doRequests(resultCh, errCh, &wg, song)
 	}
 
@@ -68,18 +71,24 @@ func doRequests(resultCh chan<- models.Lyrics, errCh chan<- error, wg *sync.Wait
 	// read body of the response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err := fmt.Errorf("failed to read response body: %w", err)
+		log.Logger.Errorf("doRequests failed: %v", err)
+
 		errCh <- err
 		return
 	}
 
 	// unmarshal json into lyrics struct
 	if err := json.Unmarshal(body, &lyricsResp); err != nil {
+		err := fmt.Errorf("failed to unmarshal response body: %w", err)
+		log.Logger.Errorf("doRequests failed: %v", err)
+
 		errCh <- err
 		return
 	}
 
 	if lyricsResp.Lyrics == "" {
-		fmt.Printf("failed to find lyrics for: %v - %v\n", song.Artist, song.Title)
+		log.Logger.Infof("failed to find lyrics for: %v - %v", song.Artist, song.Title)
 	}
 
 	lyrics := models.Lyrics{

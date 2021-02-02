@@ -2,11 +2,12 @@ package internal
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
 	"strings"
+
+	"github.com/joe-bricknell/genius/internal/log"
 
 	"github.com/joe-bricknell/genius/internal/models"
 )
@@ -373,7 +374,7 @@ func shortenSongResponse(resp geniusApiResponse) ([]models.Song, error) {
 	}
 
 	for _, song := range songList {
-		fmt.Printf("%v - %v\n", song.Artist, song.Title)
+		log.Logger.Infof("%v - %v", song.Artist, song.Title)
 	}
 
 	return songList, nil
@@ -394,6 +395,9 @@ func SearchSongs(search string) (*geniusApiResponse, error) {
 	// read the body of the request
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err := fmt.Errorf("failed to read response body: %w", err)
+		log.Logger.Errorf("SearchSongs failed: %v", err)
+
 		return nil, err
 	}
 
@@ -401,6 +405,9 @@ func SearchSongs(search string) (*geniusApiResponse, error) {
 	var songsFullResponse geniusApiResponse
 
 	if err := json.Unmarshal(body, &songsFullResponse); err != nil {
+		err := fmt.Errorf("failed to unmarshal response body: %w", err)
+		log.Logger.Errorf("SearchSongs failed: %v", err)
+
 		return nil, err
 	}
 
@@ -409,12 +416,15 @@ func SearchSongs(search string) (*geniusApiResponse, error) {
 
 func GetOneSong(songs geniusApiResponse) (*models.Song, error) {
 	if len(songs.Response.Hits) == 0 {
-		return nil, errors.New("could not find any songs for search")
+		err := fmt.Errorf("could not find any songs for search")
+		log.Logger.Errorf("SearchSongs failed: %v", err)
+
+		return nil, err
 	}
 
 	songID := songs.Response.Hits[0].Result.ID
 
-	fmt.Printf("found id: %v for song: %v\n", songID, songs.Response.Hits[0].Result.FullTitle)
+	log.Logger.Infof("found id: %v for song: %v", songID, songs.Response.Hits[0].Result.FullTitle)
 
 	song, err := getSongFromID(songID)
 	if err != nil {
@@ -438,11 +448,17 @@ func getSongFromID(id int) (*geniusApiResponseOneSong, error) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err := fmt.Errorf("failed to read response body: %w", err)
+		log.Logger.Errorf("SearchSongs failed: %v", err)
+
 		return nil, err
 	}
 
 	var song geniusApiResponseOneSong
 	if err := json.Unmarshal(body, &song); err != nil {
+		err := fmt.Errorf("failed to unmarshal response body: %w", err)
+		log.Logger.Errorf("SearchSongs failed: %v", err)
+
 		return nil, err
 	}
 
