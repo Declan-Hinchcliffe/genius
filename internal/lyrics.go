@@ -27,8 +27,9 @@ func getLyrics(songList []models.Song) ([]models.Lyrics, error) {
 
 	wg.Add(len(songList))
 
-	for i, song := range songList {
-		log.Logger.Infof("%v. %v - %v\n", i, song.Artist, song.Title)
+	log.Logger.Info("looking for lyrics for...")
+	for _, song := range songList {
+		log.Logger.Infof("%v - %v", song.Artist, song.Title)
 		go doRequests(resultCh, errCh, &wg, song)
 	}
 
@@ -87,7 +88,7 @@ func doRequests(resultCh chan<- models.Lyrics, errCh chan<- error, wg *sync.Wait
 	}
 
 	if lyricsResp.Lyrics == "" {
-		log.Logger.Infof("failed to find lyrics for: %v - %v\n", song.Artist, song.Title)
+		log.Logger.Infof("failed to find lyrics for: %v - %v", song.Artist, song.Title)
 	}
 
 	lyrics := models.Lyrics{

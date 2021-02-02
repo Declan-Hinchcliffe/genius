@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 function Home() { 
-    const [foo, setFoo] = useState(false);
+    const [bool, setBool] = useState(null);
+    const [search, setSearch] = useState('');
+    const [words, setWords] = useState('');
  
    useEffect(() => {
         axios.interceptors.request.use(request => {
@@ -12,22 +14,24 @@ function Home() {
 
         axios({
             method: 'post',
-            url: 'http://localhost:9000/song/lyrics',
+            url: 'http://localhost:9000/songs/lyrics/artist',
             data: { 
-                name: 'hello'
+                search: `${search}`,
+                words:`${words}`
             }
         })
         .then((response) => {
             console.log(response.data);
         })
-    }, [foo])
+    }, [bool])
 
     return (
         <div>
             <form>
                 <label>Search: </label>
-                <input className="border rounded-lg"/>
-                <button onClick={()=> {setFoo(!foo)}}  type="button" className="w-20 border rounded-lg">Submit</button>
+                <input className="border rounded-lg" onChange={e => {setSearch(e.target.value)}}></input>
+                <input className="border rounded-lg" onChange={e => {setWords(e.target.value)}}></input>
+                <button onClick={() => setBool(!bool)}  type="button" className="w-20 border rounded-lg">Submit</button>
             </form>
         </div>
     )

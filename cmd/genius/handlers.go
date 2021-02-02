@@ -24,7 +24,7 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if test.Name == "" {
+	if test.Search == "" {
 		log.Logger.Infof("GetAllSongs: request body was empty: %v", test)
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -33,7 +33,7 @@ func GetAllSongs(w http.ResponseWriter, r *http.Request) {
 
 	log.Logger.Infof("GetAllSongs: successfully read request body: %v", test)
 
-	id, err := internal.GetArtistID(test.Name)
+	id, err := internal.GetArtistID(test.Search)
 	if err != nil {
 		err := fmt.Errorf("error when retrieving artist id: %w", err)
 		log.Logger.Errorf("GetAllSongs failed: %v", err)
@@ -72,7 +72,7 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if test.Name == "" {
+	if test.Search == "" {
 		log.Logger.Infof("GetAllSongs: request body was empty: %v", test)
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -81,7 +81,7 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 
 	log.Logger.Infof("GetLyricsByArtist: successfully read request body: %v", test)
 
-	songData, err := internal.GetAllLyricsByArtist(test.Name)
+	songData, err := internal.GetAllLyricsByArtist(test.Search)
 	if err != nil {
 		err := fmt.Errorf("error when getting all lyrics by artist: %w", err)
 		log.Logger.Errorf("GetLyricsByArtist failed: %v", err)
@@ -90,14 +90,12 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//var wordMap map[string]int
-	//var data []models.Song
-	//wordsInput := "hello and the"
-	//
-	//wordMap, err = internal.FindWords(songData, &wordsInput)
-	//if err != nil {
-	//	http.Error(w, http.StatusText(400), 400)
-	//}
+	wordMap, err := internal.ScanWords(songData, &test.Words)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
+
+	log.Logger.Infof("finished scanning words: %v", wordMap)
 
 	if err := json.NewEncoder(w).Encode(songData); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)
@@ -120,7 +118,7 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if test.Name == "" {
+	if test.Search == "" {
 		log.Logger.Infof("GetAllSongs: request body was empty: %v", test)
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -129,7 +127,7 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 
 	log.Logger.Infof("GetLyricsBySearch: successfully read request body: %v", test)
 
-	songData, err := internal.GetLyricsBySearch(test.Name)
+	songData, err := internal.GetLyricsBySearch(test.Search)
 	if err != nil {
 		err := fmt.Errorf("error when getting lyrics by search: %w", err)
 		log.Logger.Errorf("GetLyricsBySearch failed: %v", err)
@@ -137,6 +135,13 @@ func GetLyricsBySearch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	wordMap, err := internal.ScanWords(songData, &test.Words)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
+
+	log.Logger.Infof("finished scanning words: %v", wordMap)
 
 	if err := json.NewEncoder(w).Encode(songData); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)
@@ -160,7 +165,7 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if test.Name == "" {
+	if test.Search == "" {
 		log.Logger.Infof("GetAllSongs: request body was empty: %v", test)
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -169,7 +174,7 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 
 	log.Logger.Infof("GetOneSongBySearch: successfully read request body: %v", test)
 
-	songs, err := internal.SearchSongs(test.Name)
+	songs, err := internal.SearchSongs(test.Search)
 	if err != nil {
 		err := fmt.Errorf("error when searching songs: %w", err)
 		log.Logger.Errorf("GetOneSongBySearch failed: %v", err)
@@ -198,7 +203,8 @@ func GetOneSongBySearch(w http.ResponseWriter, r *http.Request) {
 }
 
 type foo struct {
-	Name string `json:"name"`
+	Search string `json:"search"`
+	Words  string `json:"words"`
 }
 
 // GetLyricsOneSong will retrieve the lyrics for one song by searching all songs, find
@@ -214,16 +220,16 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if test.Name == "" {
+	if test.Search == "" {
 		log.Logger.Infof("GetAllSongs: request body was empty: %v", test)
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	log.Logger.Infof("GetLyricsOneSong: successfully read request body: %v", test)
+	log.Logger.Infof("GetLyricsOneSong: successfully read request body: %v, %v", test.Search, test.Words)
 
-	songs, err := internal.SearchSongs(test.Name)
+	songs, err := internal.SearchSongs(test.Search)
 	if err != nil {
 		err := fmt.Errorf("error when searching songs: %w", err)
 		log.Logger.Errorf("GetLyricsOneSong failed: %w", err)
@@ -250,15 +256,6 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//wordsInput := "hello and the"
-	//
-	//wordMap, err := internal.FindWords(data, &wordsInput)
-	//if err != nil {
-	//	http.Error(w, http.StatusText(400), 400)
-	//}
-
-	//_ = wordMap
-
 	data := models.Song{
 		ID:     singleSong.ID,
 		Title:  singleSong.Title,
@@ -268,6 +265,13 @@ func GetLyricsOneSong(w http.ResponseWriter, r *http.Request) {
 			Lyrics: songWithLyrics.Lyrics,
 		},
 	}
+
+	wordMap, err := internal.ScanWords([]models.Song{data}, &test.Words)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
+	}
+
+	log.Logger.Infof("finished scanning words: %v", wordMap)
 
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)

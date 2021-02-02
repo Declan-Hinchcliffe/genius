@@ -374,7 +374,7 @@ func shortenSongResponse(resp geniusApiResponse) ([]models.Song, error) {
 	}
 
 	for _, song := range songList {
-		log.Logger.Infof("%v - %v\n", song.Artist, song.Title)
+		log.Logger.Infof("%v - %v", song.Artist, song.Title)
 	}
 
 	return songList, nil
@@ -424,7 +424,7 @@ func GetOneSong(songs geniusApiResponse) (*models.Song, error) {
 
 	songID := songs.Response.Hits[0].Result.ID
 
-	log.Logger.Infof("found id: %v for song: %v\n", songID, songs.Response.Hits[0].Result.FullTitle)
+	log.Logger.Infof("found id: %v for song: %v", songID, songs.Response.Hits[0].Result.FullTitle)
 
 	song, err := getSongFromID(songID)
 	if err != nil {

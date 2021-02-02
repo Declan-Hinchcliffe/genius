@@ -125,7 +125,7 @@ func GetArtistID(artist string) (*int, error) {
 
 	id := songResponse.Response.Hits[0].Result.PrimaryArtist.ID
 
-	log.Logger.Infof("successfully retrieved id for %v - %v\n", artist, id)
+	log.Logger.Infof("successfully retrieved id for %v - %v", artist, id)
 
 	return &id, nil
 }
