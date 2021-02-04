@@ -102,7 +102,9 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		WordMap: wordMap,
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	_ = response
+
+	if err := json.NewEncoder(w).Encode(songData); err != nil {
 		err := fmt.Errorf("error when encoding response: %w", err)
 		log.Logger.Errorf("GetLyricsByArtist failed: %v", err)
 

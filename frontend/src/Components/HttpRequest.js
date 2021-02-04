@@ -1,35 +1,53 @@
 import { useEffect, useState } from "react"
-import Axios from 'axios'
+import axios from 'axios'
 
-function AxiosGet(url) {
-    const [request, setRequest] = useState({
-        loading: false,
-        data: null,
-        error: false,
-    })
-    
-    useEffect(() => {
-        setRequest({
-            loading: true,
-            data: null,
-            error: false,
+function AxiosGet(url, search, words, bool) {
+    const [request, setRequest] = useState(null)
+
+    // let content = null
+
+       useEffect(() => {
+        axios.interceptors.request.use(request => {
+            console.log(JSON.stringify(request.data))
+            return request
         })
-        Axios.get(url)
-        .then(response => {
-            setRequest({
-                loading: false,
-                data: response.data,
-                error: false,
-            })
+
+        axios({
+            method: 'post',
+            url: url,
+            data: { 
+                search: search,
+                words: words
+            }
         })
-        .catch(() => {
-            setRequest({
-                loading: false,
-                data: null,
-                error: true,
-            })
+        .then((response) => {
+            console.log(response.data);
+            setRequest(response.data);
         })
-    }, [url])
+    }, [bool])
+
+    // useEffect(() => {
+    //     setRequest({
+    //         loading: true,
+    //         data: null,
+    //         error: false,
+    //     })
+    //     Axios.get(url)
+    //     .then(response => {
+    //         setRequest({
+    //             loading: false,
+    //             data: response.data,
+    //             error: false,
+    //         })
+    //     })
+    //     .catch(() => {
+    //         setRequest({
+    //             loading: false,
+    //             data: null,
+    //             error: true,
+    //         })
+    //     })
+    // }, [url])
 
     return request
 }

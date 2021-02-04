@@ -9,15 +9,15 @@ func NewRouter() *mux.Router {
 
 	r.HandleFunc("/home", homeHandler)
 
-	// looking for songs/lyrics by artist
-	r.HandleFunc("/songs/search", GetAllSongs)
+	// get top 20 songs with lyrics by search
 	r.HandleFunc("/songs/lyrics/artist", GetLyricsByArtist)
-
-	// looking for one song or one song lyrics
+	// get one song and its lyrics
 	r.HandleFunc("/song/lyrics", GetLyricsOneSong)
+	// get songs by searching
 	r.HandleFunc("/search/lyrics/", GetLyricsBySearch)
 
-	// looking via search
+	// i think im going to remove these
+	r.HandleFunc("/songs/search", GetAllSongs)
 	r.HandleFunc("/search/song", GetOneSongBySearch)
 
 	return r
