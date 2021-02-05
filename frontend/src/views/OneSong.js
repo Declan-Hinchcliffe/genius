@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 // import { useParams } from 'react-router-dom'
 // import SongCard from '../Components/SongCard'
 // import Loader from '../Components/Loader'
 import AxiosGet from '../Components/HttpRequest'
-import SongCard from '../Components/SongCard';
+// import SongCard from '../Components/SongCard';
 
 function OneSong() {
     const [bool, setBool] = useState(null);
@@ -15,21 +15,28 @@ function OneSong() {
     let content = null
  
     let songs = AxiosGet(url, search, words, bool)
-    
-    if (songs){
-     
+
+    if (songs.error) {
         content = 
-        songs.songs.map((song, key) => {
-            <div>
+        <div> there was an error, please try again </div>
+    }
+
+    if(songs.loading){
+        content =
+        <div>loading...</div>
+    }
+    
+    if (songs.data){
+        content = 
+        songs.data.songs.map((song) => {
+            <div key={song.id}>
                 { song.title }
                 { song.artist }
                 { song.lyrics.lyrics }
             </div>
 
             console.log(song.title, song.artist)
-
         })
-        
     }
 
     return (

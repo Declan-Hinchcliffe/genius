@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 // import { useParams } from 'react-router-dom'
 // import SongCard from '../Components/SongCard'
 // import Loader from '../Components/Loader'
@@ -14,24 +14,20 @@ function SearchSongs() {
     let songs = AxiosGet(url, search, words, bool)
 
     let content = null
-
    
-    if (songs){
-     
+    if (songs.data){
         content = 
-        songs.songs.map((song, key) => {
-            <div>
+        songs.data.songs.map((song) => {
+            <div key={song.id}>
                 { song.title }
                 { song.artist }
                 { song.lyrics.lyrics }
             </div>
 
             console.log(song.title, song.artist)
-
         })
         
-    }
-           
+    }   
 
     return (
         <div>

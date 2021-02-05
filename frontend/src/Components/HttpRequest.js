@@ -2,16 +2,22 @@ import { useEffect, useState } from "react"
 import axios from 'axios'
 
 function AxiosGet(url, search, words, bool) {
-    const [request, setRequest] = useState(null)
+    const [request, setRequest] = useState({
+        loading: false,
+        data: null,
+        error: false
+    })
 
-    // let content = null
-
-       useEffect(() => {
+    useEffect(() => {
         axios.interceptors.request.use(request => {
             console.log(JSON.stringify(request.data))
             return request
         })
-
+        setRequest({
+            loading: true,
+            data: null,
+            error: false
+        })
         axios({
             method: 'post',
             url: url,
@@ -21,33 +27,22 @@ function AxiosGet(url, search, words, bool) {
             }
         })
         .then((response) => {
+            setRequest({
+                loading: true,
+                data: response.data,
+                error: false,
+            })
+            
             console.log(response.data);
-            setRequest(response.data);
+        })
+        .catch(() => {
+            setRequest({
+                loading: false,
+                data: null,
+                error: true,
+            })
         })
     }, [bool])
-
-    // useEffect(() => {
-    //     setRequest({
-    //         loading: true,
-    //         data: null,
-    //         error: false,
-    //     })
-    //     Axios.get(url)
-    //     .then(response => {
-    //         setRequest({
-    //             loading: false,
-    //             data: response.data,
-    //             error: false,
-    //         })
-    //     })
-    //     .catch(() => {
-    //         setRequest({
-    //             loading: false,
-    //             data: null,
-    //             error: true,
-    //         })
-    //     })
-    // }, [url])
 
     return request
 }
