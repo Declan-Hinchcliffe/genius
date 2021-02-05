@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 // import SongCard from '../Components/SongCard'
 // import Loader from '../Components/Loader'
 import AxiosGet from '../Components/HttpRequest'
-// import SongCard from '../Components/SongCard';
+import SongCard from '../Components/SongCard';
 
 function OneSong() {
     const [bool, setBool] = useState(null);
@@ -28,27 +28,26 @@ function OneSong() {
     
     if (songs.data){
         content = 
-        songs.data.songs.map((song) => {
+            songs.data.songs.map((song, key) => {
+        return (    
             <div key={song.id}>
-                { song.title }
-                { song.artist }
-                { song.lyrics.lyrics }
+                <SongCard 
+                    song={song}
+                />
             </div>
-
-            console.log(song.title, song.artist)
+            )
         })
-    }
+    } 
+    
 
     return (
         <div>
             <div>
                 <h2>Search for a single song...</h2>
                 <form>
-                    <label>Search: </label>
-                        <input className="border rounded-lg" onChange={e => {setSearch(e.target.value)}}></input>
-                    <label>Words: </label>
-                        <input className="border rounded-lg" onChange={e => {setWords(e.target.value)}}></input>
-                    <button onClick={() => setBool(!bool)}  type="button" className="w-20 border rounded-lg">Submit</button>
+                    Search:<input onChange={e => {setSearch(e.target.value)}}></input>
+                    Words:<input onChange={e => {setWords(e.target.value)}}></input>
+                    <button onClick={() => setBool(!bool)}  type="button">Submit</button>
                 </form>
 
                 { content }

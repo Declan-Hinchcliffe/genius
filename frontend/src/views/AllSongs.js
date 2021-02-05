@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import AxiosGet from '../Components/HttpRequest';
-// import SongCard from '../Components/SongCard';
+import SongCard from '../Components/SongCard';
 
 function AllSongs() {
     const [bool, setBool] = useState(null);
@@ -13,16 +13,26 @@ function AllSongs() {
 
     let content = null
 
+    if (songs.error) {
+        content = 
+        <div> there was an error, please try again </div>
+    }
+
+    if(songs.loading){
+        content =
+        <div>loading...</div>
+    }
+    
     if (songs.data){
         content = 
-        songs.data.songs.map((song) => {
+            songs.data.songs.map((song) => {
+        return (    
             <div key={song.id}>
-                { song.title }
-                { song.artist }
-                { song.lyrics.lyrics }
+                <SongCard 
+                    song={song}
+                />
             </div>
-
-            console.log(song.title, song.artist)
+            )
         })
     }
 

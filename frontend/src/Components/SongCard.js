@@ -1,19 +1,22 @@
 import React from 'react'
 
-function SongCard(props) {
-    if (props.lyrics.lyrics === "") {
-        props.lyrics.lyrics = "Unable to find lyrics for this song!"
+function SongCard(props) { 
+  
+    console.log("props", props.song.title)
+    console.log("props", props.song.artist)
+
+    if (props.song.lyrics.lyrics === "") {
+        props.song.lyrics.lyrics = "couldn't find lyrics for this song"
     }
 
     return (
         <div>
             <div>
-                <div >
-                    { props.artist } - { props.title }
-                    
+                <div>
+                    { props.song.artist } - { props.song.title }
                 </div>
                 <div >
-                    { props.lyrics.lyrics }
+                    { props.song.lyrics.lyrics }
                 </div>
             </div>
         </div>

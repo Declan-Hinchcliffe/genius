@@ -13,35 +13,34 @@ function AxiosGet(url, search, words, bool) {
             console.log(JSON.stringify(request.data))
             return request
         })
-        setRequest({
-            loading: true,
-            data: null,
-            error: false
-        })
-        axios({
-            method: 'post',
-            url: url,
-            data: { 
-                search: search,
-                words: words
-            }
-        })
-        .then((response) => {
+
+        const doRequest = async () => {
             setRequest({
                 loading: true,
-                data: response.data,
-                error: false,
-            })
-            
-            console.log(response.data);
-        })
-        .catch(() => {
-            setRequest({
-                loading: false,
                 data: null,
-                error: true,
+                error: false
             })
-        })
+            try {
+                const response = await axios.post(url, {
+                    search,
+                    words
+                })
+
+                setRequest({
+                    loading: true,
+                    data: response.data,
+                    error: false,
+                })
+            } catch {
+                setRequest({
+                    loading: false,
+                    data: null,
+                    error: true,
+                })
+            }
+        }
+        doRequest()
+
     }, [bool])
 
     return request
