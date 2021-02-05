@@ -3,39 +3,57 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
+  Link,
 } from 'react-router-dom';
-import Footer from './Components/Footer';
-import Header from './Components/Header';
-import Songs from './views/Songs'
+// import Footer from './Components/Footer';
+// import Header from './Components/Header';
 import Home from './views/Home';
+import OneSong from './views/OneSong'
+import AllSongs from './views/AllSongs';
+import SearchSongs from './views/SearchSongs';
 
 
 function App() {
   return (
-    <div className="relative pb-10 min-h-screen">
+    <div >
       <Router>
-        <Header/>
+        <h2>What do you want to do?</h2>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">home</Link>
+            </li>
+            <li>
+              <Link to="/onesong">search for one song</Link>
+            </li>
+            <li>
+              <Link to="/allsongs">get artists top songs</Link>
+            </li>
+            <li>
+              <Link to="/searchsongs">search for songs</Link>
+            </li>
+         </ul>
+        </nav>
 
-          <Route path="/">
-            <Home/>
+        <Switch>
+          <Route path="/onesong">
+            <OneSong />
           </Route>
 
-          <Switch>
-            <Route path="/songs/lyrics/:name">
-              <Songs />
-            </Route>
+          <Route path="/allsongs">
+            <AllSongs />
+          </Route>
 
-            <Route path="/songs/lyrics/:name">
+          <Route path="/searchsongs">
+            <SearchSongs />
+          </Route>
+
+          <Route path="/">
+            <Home />
+          </Route>
+
+        </Switch>
         
-            </Route>
-
-            <Route path="/songs/lyrics/:name">
-            
-            </Route>
-
-          </Switch>
-        
-        <Footer/>
       </Router>
     </div>
   );
