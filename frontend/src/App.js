@@ -21,16 +21,16 @@ function App() {
         <nav>
           <ul>
             <li>
-              <Link to="/">home</Link>
+              <Link to="/">Home</Link>
             </li>
             <li>
-              <Link to="/onesong">search for one song</Link>
+              <Link to="/onesong">Search for one song</Link>
             </li>
             <li>
-              <Link to="/allsongs">get artists top songs</Link>
+              <Link to="/allsongs">Get artists top songs</Link>
             </li>
             <li>
-              <Link to="/searchsongs">search for songs</Link>
+              <Link to="/searchsongs">Search for songs</Link>
             </li>
          </ul>
         </nav>

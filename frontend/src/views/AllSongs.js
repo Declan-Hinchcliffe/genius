@@ -11,40 +11,50 @@ function AllSongs() {
     
     let songs = AxiosGet(url, search, words, bool)
 
-    let content = null
+    let songData = null
+    let wordsObj = null
+    let wordsCounter = null
 
     if (songs.error) {
-        content = 
+        songData = 
         <div> there was an error, please try again </div>
     }
 
     if(songs.loading){
-        content =
+        songData =
         <div>loading...</div>
     }
     
     if (songs.data){
-        content = 
-            songs.data.songs.map((song) => {
-            let props = {
-                song: song,
-                wordMap: songs.data.wordMap
+        wordsObj = songs.data.wordMap
+        wordsCounter =               
+        <div>
+            { 
+                Object.entries(wordsObj).map(([key,value], index) => {
+                    return (
+                        <div key={index}>{key}: {value.toString()}</div>
+                    );
+                })
             }
+        </div>
+
+        songData = 
+            songs.data.songs.map((song) => {
 
         return (    
             <div key={song.id}>
                 <SongCard 
-                    data={props}
+                    data={song}
                 />
-            </div>
+            </div>     
             )
         })
-    } 
+    }
 
     return (
         <div>
             <div>
-                <h2>Search for songs...</h2>
+                <h2>Matches the top 20 songs by an artist...</h2>
                 <form>
                     <label>Search: </label>
                         <input className="border rounded-lg" onChange={e => {setSearch(e.target.value)}}></input>
@@ -52,9 +62,12 @@ function AllSongs() {
                         <input className="border rounded-lg" onChange={e => {setWords(e.target.value)}}></input>
                     <button onClick={() => setBool(!bool)}  type="button" className="w-20 border rounded-lg">Submit</button>
                 </form>
-
-
-                { content }
+                <div>
+                    { wordsCounter }
+                </div>
+                <div>
+                    { songData }
+                </div>
             </div>
         </div>
     )
