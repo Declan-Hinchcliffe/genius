@@ -109,6 +109,8 @@ func GetLyricsByArtist(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	fmt.Print(w)
 }
 
 // GetLyricsBySearch will get all the lyrics for the 20 results of a given search

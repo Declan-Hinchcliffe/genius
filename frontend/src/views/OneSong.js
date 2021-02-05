@@ -28,11 +28,16 @@ function OneSong() {
     
     if (songs.data){
         content = 
-            songs.data.songs.map((song, key) => {
+            songs.data.songs.map((song) => {
+            let props = {
+                song: song,
+                wordMap: songs.data.wordMap
+            }
+
         return (    
             <div key={song.id}>
                 <SongCard 
-                    song={song}
+                    data={props}
                 />
             </div>
             )

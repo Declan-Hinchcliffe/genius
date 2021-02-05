@@ -1,24 +1,39 @@
 import React from 'react'
 
 function SongCard(props) { 
-  
-    console.log("props", props.song.title)
-    console.log("props", props.song.artist)
+    let obj = props.data.wordMap
 
-    if (props.song.lyrics.lyrics === "") {
-        props.song.lyrics.lyrics = "couldn't find lyrics for this song"
+    if (props.data.song.lyrics.lyrics === "") {
+        props.data.song.lyrics.lyrics = "couldn't find lyrics for this song"
+    }
+
+    let wordCount = null
+
+    if (obj) {
+        wordCount = 
+        <div>
+            { 
+                Object.entries(obj).map(([key,value], index) => {
+                    return (
+                        <div key={index}>{key}: {value.toString()}</div>
+                    );
+                })
+            }
+        </div>
     }
 
     return (
         <div>
             <div>
-                <div>
-                    { props.song.artist } - { props.song.title }
-                </div>
-                <div >
-                    { props.song.lyrics.lyrics }
-                </div>
+                { props.data.song.artist } - { props.data.song.title }
             </div>
+            <div >
+                { props.data.song.lyrics.lyrics }
+            </div>
+            <div>
+                { wordCount }
+            </div>
+           
         </div>
     )
 }
